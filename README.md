@@ -32,16 +32,16 @@ See also: [pkg-repository(5)](https://man.dragonflybsd.org/?command=pkg-reposito
 For example, configure the pkg repos as:
 ```
 AUTO: {
-	url: https://pkg.dragonflybsd.org/
+	url: https://pkg.dragonflybsd.org/pkg/${ABI}/LATEST
 	mirror_type: HTTP
 }
 ```
 
 And upon client's request, the service returns, e.g.,:
 ```
-URL: https://mirror.sjtu.edu.cn/dragonflybsd/dports/${ABI}/LATEST
+URL: https://mirror.sjtu.edu.cn/dragonflybsd/dports/dragonfly:5.10:x86:64/LATEST
 URL: ...
-URL: https://mirror-master.dragonflybsd.org/dports/${ABI}/LATEST
+URL: https://mirror-master.dragonflybsd.org/dports/dragonfly:5.10:x86:64/LATEST
 ```
 
 License

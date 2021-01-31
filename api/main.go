@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 
@@ -88,7 +89,8 @@ func GetPkgMirrors(c *gin.Context) {
 	mirrors := geoip.FindMirrors(location)
 	urls := ""
 	for _, m := range mirrors {
-		urls += fmt.Sprintf("URL: %s/${ABI}/LATEST\n", m.URL)
+		urls += fmt.Sprintf("URL: %s/%s/%s\n", m.URL, c.Param("abi"),
+				strings.TrimPrefix(c.Param("path"), "/"))
 	}
 	c.String(http.StatusOK, urls)
 }

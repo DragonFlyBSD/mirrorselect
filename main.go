@@ -80,7 +80,7 @@ func main() {
 
 	router := gin.Default()
 	router.GET("/", api.GetPing)
-	router.GET("/pkg", api.GetPkgMirrors)
+	router.GET("/pkg/:abi/*path", api.GetPkgMirrors)
 	router.GET("/mirror", api.GetMirrors)
 	router.GET("/mirrors", api.GetMirrors)
 	router.GET("/ip", api.GetIP)
