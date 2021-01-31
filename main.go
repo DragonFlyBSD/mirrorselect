@@ -48,6 +48,7 @@ import (
 
 	"dragonflybsd/mirrorselect/api"
 	"dragonflybsd/mirrorselect/config"
+	"dragonflybsd/mirrorselect/monitor"
 )
 
 const (
@@ -88,6 +89,8 @@ func main() {
 	router.GET("/mirrors", api.GetMirrors)
 	router.GET("/ip", api.GetIP)
 	router.GET("/ping", api.GetPing)
+
+	go monitor.StartMonitor()
 
 	log.Println("Listen on:", cfg.Listen)
 	router.Run(cfg.Listen)

@@ -15,3 +15,15 @@ mirror_list = "mirrors.dev.toml"
 
 # MaxMind GeoLite2 database file
 mmdb_file = "GeoLite2-City_20201006.mmdb"
+
+# Settings for mirror monitor
+#
+[monitor]
+# Interval in seconds between monitor rounds
+interval = 60
+# Timeout set for requesting mirrors
+timeout = 5
+# Number of consecutive status before flipping mirror's status
+hysteresis = 3
+# Whether to verify the server's certificate?
+tls_verify = false

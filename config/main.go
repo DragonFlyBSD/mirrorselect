@@ -3,6 +3,7 @@ package config
 import (
 	"log"
 	"path/filepath"
+	"time"
 
 	"github.com/oschwald/maxminddb-golang"
 	"github.com/spf13/viper"
@@ -20,6 +21,13 @@ type Mirror struct {
 	IsOffline	bool    `json:"offline"`
 }
 
+type MonitorConfig struct {
+	Interval	time.Duration `mapstructure:"interval"`
+	Timeout		time.Duration `mapstructure:"timeout"`
+	Hysteresis	int           `mapstructure:"hysteresis"`
+	TLSVerify	bool          `mapstructure:"tls_verify"`
+}
+
 type Config struct {
 	Debug		bool   `mapstructure:"debug"`
 	Listen		string `mapstructure:"listen"`
@@ -28,6 +36,7 @@ type Config struct {
 	Mirrors		map[string]*Mirror
 	MMDBFile	string `mapstructure:"mmdb_file"`
 	MMDB		*maxminddb.Reader
+	Monitor		MonitorConfig
 }
 
 var AppConfig *Config = &Config{}
@@ -40,6 +49,7 @@ func ReadConfig(cfgfile string) *Config {
 	v.SetConfigFile(cfgfile)
 	v.SetDefault("debug", false)
 	v.SetDefault("listen", "127.0.0.1:3130")
+	v.SetDefault("monitor.tls_verify", true)
 
 	err := v.ReadInConfig()
 	if err != nil {
@@ -50,6 +60,10 @@ func ReadConfig(cfgfile string) *Config {
 	err = v.Unmarshal(AppConfig)
 	if err != nil {
 		log.Fatalf("Failed to unmarshal config: %v\n", err)
+	}
+
+	if !AppConfig.Monitor.TLSVerify {
+		log.Println("WARNING: TLS verification disabled!")
 	}
 
 	mlfile := AppConfig.MirrorListFile
