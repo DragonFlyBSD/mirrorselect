@@ -8,10 +8,10 @@ debug = true
 listen = "127.0.0.1:3130"
 
 # Uncomment to write log to a file
-#logfile = "mirrorselect.log"
+#log_file = "mirrorselect.log"
 
 # File containing the mirrors (path relative to this file)
-mirrorlist = "mirrors.toml"
+mirror_list = "mirrors.dev.toml"
 
 # MaxMind GeoLite2 database file
-mmdbfile = "GeoLite2-City_20201006.mmdb"
+mmdb_file = "GeoLite2-City_20201006.mmdb"

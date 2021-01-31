@@ -23,10 +23,10 @@ type Mirror struct {
 type Config struct {
 	Debug		bool   `mapstructure:"debug"`
 	Listen		string `mapstructure:"listen"`
-	LogFile		string `mapstructure:"logfile"`
-	MirrorListFile	string `mapstructure:"mirrorlist"`
+	LogFile		string `mapstructure:"log_file"`
+	MirrorListFile	string `mapstructure:"mirror_list"`
 	Mirrors		map[string]Mirror
-	MMDBFile	string `mapstructure:"mmdbfile"`
+	MMDBFile	string `mapstructure:"mmdb_file"`
 	MMDB		*maxminddb.Reader
 }
 
@@ -54,7 +54,7 @@ func ReadConfig(cfgfile string) *Config {
 
 	mlfile := AppConfig.MirrorListFile
 	if mlfile == "" {
-		log.Fatal("Config [mirrorlist] not set")
+		log.Fatal("Config [mirror_list] not set")
 	}
 	if !filepath.IsAbs(mlfile) {
 		mlfile = filepath.Join(filepath.Dir(cfgfile), mlfile)
@@ -63,7 +63,7 @@ func ReadConfig(cfgfile string) *Config {
 
 	mmdbfile := AppConfig.MMDBFile
 	if mmdbfile == "" {
-		log.Fatal("Config [mmdbfile] not set")
+		log.Fatal("Config [mmdb_file] not set")
 	}
 	if !filepath.IsAbs(mmdbfile) {
 		mmdbfile = filepath.Join(filepath.Dir(cfgfile), mmdbfile)
