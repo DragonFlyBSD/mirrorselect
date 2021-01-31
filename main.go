@@ -65,6 +65,9 @@ func main() {
 	if cfg.Debug {
 		gin.SetMode(gin.DebugMode)
 		log.Printf("[DEBUG] config: %v", cfg)
+		for name, mirror := range cfg.Mirrors {
+			log.Printf("[DEBUG] Mirror [%s]: %v\n", name, mirror)
+		}
 	}
 
 	if cfg.LogFile != "" {

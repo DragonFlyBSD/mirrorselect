@@ -70,18 +70,18 @@ func LookupIP(ip net.IP) (*Location, error) {
 // - Append the default to the last as the fallback.
 // - If location is nil, then return the default mirror.
 //
-func FindMirrors(location *Location) []config.Mirror {
+func FindMirrors(location *Location) []*config.Mirror {
 	if location == nil {
 		// Return the default mirror
 		for _, mirror := range appConfig.Mirrors {
 			if mirror.IsDefault {
-				return []config.Mirror{ mirror }
+				return []*config.Mirror{ mirror }
 			}
 		}
 	}
 
-	var m_default config.Mirror
-	var m_country, m_continent []config.Mirror
+	var m_default *config.Mirror
+	var m_country, m_continent []*config.Mirror
 	for _, mirror := range appConfig.Mirrors {
 		if mirror.IsDefault {
 			// Just use it even if offline
@@ -101,7 +101,7 @@ func FindMirrors(location *Location) []config.Mirror {
 	sort.Slice(m_country, f_less(m_country, location))
 	sort.Slice(m_continent, f_less(m_continent, location))
 
-	mirrors := []config.Mirror{}
+	mirrors := []*config.Mirror{}
 	if len(m_country) > 0 {
 		mirrors = append(mirrors, m_country...)
 	} else if len(m_continent) > 0 {
@@ -117,10 +117,10 @@ func FindMirrors(location *Location) []config.Mirror {
 // Helper function that returns another function to sort the mirror
 // slice by their distances to the client.
 //
-func f_less(s []config.Mirror, loc *Location) func(i, j int) bool {
+func f_less(s []*config.Mirror, loc *Location) func(i, j int) bool {
 	return func(i, j int) bool {
-		di := mirror_distance(&s[i], loc)
-		dj := mirror_distance(&s[j], loc)
+		di := mirror_distance(s[i], loc)
+		dj := mirror_distance(s[j], loc)
 		return di < dj
 	}
 }

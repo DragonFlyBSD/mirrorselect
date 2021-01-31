@@ -25,7 +25,7 @@ type Config struct {
 	Listen		string `mapstructure:"listen"`
 	LogFile		string `mapstructure:"log_file"`
 	MirrorListFile	string `mapstructure:"mirror_list"`
-	Mirrors		map[string]Mirror
+	Mirrors		map[string]*Mirror
 	MMDBFile	string `mapstructure:"mmdb_file"`
 	MMDB		*maxminddb.Reader
 }
@@ -78,7 +78,7 @@ func ReadConfig(cfgfile string) *Config {
 
 // Read config file of mirrors.
 //
-func ReadMirrors(fname string) *map[string]Mirror {
+func ReadMirrors(fname string) {
 	v := viper.New()
 	v.SetConfigFile(fname)
 	err := v.ReadInConfig()
@@ -104,6 +104,4 @@ func ReadMirrors(fname string) *map[string]Mirror {
 	if len(defaults) > 1 {
 		log.Fatalf("More than one default mirrors: %v", defaults)
 	}
-
-	return &AppConfig.Mirrors
 }
