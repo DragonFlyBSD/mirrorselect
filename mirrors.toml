@@ -1,5 +1,6 @@
-[avalon]
-name = "Avalon"
+# United States, California, San Jose
+[dfly_avalon]
+name = "DragonFly/Avalon"
 default = true
 url = "https://mirror-master.dragonflybsd.org/dports"
 continent_code = "NA"
@@ -7,6 +8,79 @@ country_code = "US"
 latitude = 37.333333
 longitude = -121.9
 
+# Europe, France, Roubaix
+[dfly_eu1]
+name = "DragonFly/EU1"
+url = "https://mirror-eu-1.dragonflybsd.org/dports"
+continent_code = "EU"
+country_code = "FR"
+latitude = 50.6942
+longitude = 3.1746
+
+#
+# North America
+#
+
+# Canada, Winnipeg
+# Manitoba Unix User Group
+[muug]
+name = "MUUG"
+url = "https://muug.ca/mirror/dragonflybsd/dports"
+continent_code = "NA"
+country_code = "CA"
+latitude = 49.884444
+longitude = -97.146389
+
+# United States, New York, New York City
+# New York City BSD User Group
+[nycbug]
+name = "NYCBUG"
+url = "https://mirrors.nycbug.org/pub/DragonflyBSD/dports"
+continent_code = "NA"
+country_code = "US"
+latitude = 40.71274
+longitude = -74.005974
+
+#
+# South America
+#
+
+# Ecuador, Quito
+# Escuela Politécnica Nacional
+[epn]
+name = "EPN"
+url = "https://mirror.epn.edu.ec/dragonflybsd/dports"
+continent_code = "SA"
+country_code = "EC"
+latitude = -0.233333
+longitude = -78.516667
+
+# Ecuador, Cuenca
+# CEDIA
+[cedia]
+name = "CEDIA"
+url = "https://mirror.cedia.org.ec/dragonflybsd/dports"
+continent_code = "SA"
+country_code = "EC"
+latitude = -2.897414
+longitude = -79.004481
+
+# Ecuador, Ambato
+# Universidad Técnica de Ambato
+[uta]
+name = "UTA"
+url = "https://mirror.uta.edu.ec/dragonflybsd/dports"
+continent_code = "SA"
+country_code = "EC"
+latitude = -1.241667
+longitude = -78.619722 
+
+#
+# Asia
+#
+
+# China, Shanghai
+# SJTU *NIX User Group (SJTUG)
 [sjtug]
 name = "SJTUG"
 url = "https://mirror.sjtu.edu.cn/dragonflybsd/dports"
@@ -14,3 +88,240 @@ continent_code = "AS"
 country_code = "CN"
 latitude = 31.228611
 longitude = 121.474722
+
+# Hong Kong
+# KoDDoS HK
+[koddos_hk]
+name = "KoDDoS/HK"
+url = "https://mirror-hk.koddos.net/dragonflybsd/dports"
+continent_code = "AS"
+country_code = "HK"
+latitude = 22.250000
+longitude = 114.166700
+
+# Japan, Tokyo, Meguro
+# AllBSD.org
+[allbsd]
+name = "AllBSD"
+url = "https://pub.allbsd.org/DragonFly/dports"
+continent_code = "AS"
+country_code = "JP"
+latitude = 35.641800
+longitude = 139.702300
+
+# Japan, Ishikawa, Nomi City
+# Japan Advanced Institute of Science and Technology (JAIST)
+[jaist]
+name = "JAIST"
+url = "https://ftp.jaist.ac.jp/pub/DragonFly/dports"
+continent_code = "AS"
+country_code = "JP"
+latitude = 36.4469
+longitude = 136.5541
+
+# South Korea, Seoul
+# Korea FreeBSD Users Group
+[kfbug]
+name = "KFBUG"
+url = "https://ftp.kr.freebsd.org/pub/dragonflybsd/dports"
+continent_code = "AS"
+country_code = "KR"
+latitude = 37.5683
+longitude = 126.9778
+
+# Taiwan, Taipei
+# TaiWan Advanced Research and Education Network (TWAREN)
+[twaren]
+name = "TWAREN"
+url = "http://ftp.twaren.net/BSD/DragonFlyBSD/dports"
+continent_code = "AS"
+country_code = "TW"
+latitude = 25.0478
+longitude = 121.5319
+
+#
+# Oceania
+#
+
+# Australia, New South Wales, Mascot
+# Singtel Optus Pty Ltd
+[optus]
+name = "Optus"
+url = "http://mirror.optusnet.com.au/dragonflybsd/dports"
+continent_code = "OC"
+country_code = "AU"
+latitude = -33.9333
+longitude = 151.2000
+
+#
+# Europe
+#
+
+# Belarus, Minsk City, Minsk
+# RUE Beltelecom
+[beltelecom]
+name = "Beltelecom"
+url = "https://mirror.datacenter.by/pub/DragonFlyBSD/dports"
+continent_code = "EU"
+country_code = "BY"
+latitude = 53.9000
+longitude = 27.5667
+
+# Denmark, Aalborg
+# Aalborg University
+[aalborg]
+name = "Aalborg"
+url = "https://mirrors.dotsrc.org/dragonflybsd/dports"
+continent_code = "EU"
+country_code = "DK"
+latitude = 57.0488
+longitude = 9.9217
+
+# France, Ile-de-France, Paris
+# Institut de Recherche et Coordination Acoustique/Musique
+[ircam]
+name = "IRCAM"
+url = "https://mirrors.ircam.fr/pub/DragonFlyBSD/dports"
+continent_code = "EU"
+country_code = "FR"
+latitude = 48.8534
+longitude = 2.3488
+
+# France, Ile-de-France, Ivry-sur-Seine
+[wolfpond]
+name = "Wolfpond"
+url = "http://pkg.wolfpond.org"
+continent_code = "EU"
+country_code = "FR"
+latitude = 48.8157
+longitude = 2.3849
+
+# Germany, Lübeck
+# Checkdomain GmbH
+[checkdomain]
+name = "Checkdomain"
+url = "https://mirror.checkdomain.de/dragonflybsd/dports"
+continent_code = "EU"
+country_code = "DE"
+latitude = 53.869722
+longitude = 10.686389
+
+# Germany, Marburg
+# Philipps-Universität Marburg
+[marburg]
+name = "Marburg"
+url = "ftp://ftp.mathematik.uni-marburg.de/pub/mirror/dragonfly/dports"
+continent_code = "EU"
+country_code = "DE"
+latitude = 50.81
+longitude = 8.770833
+
+# Germany, Aachen
+# RWTH Aachen University
+[aachen]
+name = "Aachen"
+url = "https://ftp.halifax.rwth-aachen.de/dragonflybsd/dports"
+continent_code = "EU"
+country_code = "DE"
+latitude = 50.775556
+longitude = 6.083611
+
+# Germany, Clausthal-Zellerfeld
+# Technical University Clausthal
+[clausthal]
+name = "Clausthal"
+url = "http://ftp.tu-clausthal.de/pub/DragonFly/dports"
+continent_code = "EU"
+country_code = "DE"
+latitude = 51.805
+longitude = 10.335556
+
+# Greece, Heraklion
+# University of Crete
+[uoc]
+name = "UOC"
+url = "https://ftp.cc.uoc.gr/mirrors/DragonFly/dports"
+continent_code = "EU"
+country_code = "GR"
+latitude = 35.327400
+longitude = 25.128100
+
+# Netherlands, Amsterdam
+# KoDDoS, Amarutu Technology Ltd.
+[koddos]
+name = "KoDDoS"
+url = "https://mirror.koddos.net/dragonflybsd/dports"
+continent_code = "EU"
+country_code = "NL"
+latitude = 52.3676
+longitude = 4.9041
+
+# Poland, Warsaw
+# ICM, University of Warsaw
+[icm]
+name = "ICM"
+url = "https://ftp.icm.edu.pl/pub/BSD/dragonflybsd/dports"
+continent_code = "EU"
+country_code = "PL"
+latitude = 52.2297
+longitude = 21.0122
+
+# Russia, Moscow
+# Macomnet JSC
+[macomnet]
+name = "Macomnet"
+url = "http://mirror.macomnet.net/pub/DragonFlyBSD/dports"
+continent_code = "EU"
+country_code = "RU"
+latitude = 55.752200
+longitude = 37.615600
+
+# Russia, Saint Petersburg
+# Tochansky Lab
+[tochlab]
+name = "TochLab"
+url = "https://mirror.tochlab.net/pub/DragonFlyBSD/dports"
+continent_code = "EU"
+country_code = "RU"
+latitude = 59.8944
+longitude = 30.2642
+
+# Sweden, Västerbotten, Umeå
+# Academic Computer Club, Umeå University
+[umu_acc]
+name = "UMU/ACC"
+url = "https://ftp.acc.umu.se/mirror/dragonflybsd.org/dports"
+continent_code = "EU"
+country_code = "SE"
+latitude = 63.8284
+longitude = 20.2597
+
+# United Kingdom, England, Manchester
+# Bytemark Hosting
+[bytemark]
+name = "Bytemark"
+url = "https://mirror.bytemark.co.uk/dragonflybsd/dports"
+continent_code = "EU"
+country_code = "GB"
+latitude = 53.4809
+longitude = -2.2374
+
+# United Kingdom, England, Welwyn Garden City
+# Coreix Ltd
+[coreix]
+name = "Coreix"
+url = "http://mirrors.coreix.net/dragonflybsd/dports"
+continent_code = "EU"
+country_code = "GB"
+latitude = 51.8032
+longitude = -0.2087
+
+# United Kingdom, England, Canterbury
+# University Of Kent, UK Mirror Service
+[uok]
+name = "UOK"
+url = "https://www.mirrorservice.org/sites/ftp.dragonflybsd.org/dports"
+continent_code = "EU"
+country_code = "GB"
+latitude = 51.283300
+longitude = 1.052800
