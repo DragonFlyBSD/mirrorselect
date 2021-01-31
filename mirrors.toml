@@ -1,0 +1,16 @@
+[avalon]
+name = "Avalon"
+default = true
+url = "https://mirror-master.dragonflybsd.org/dports"
+continent_code = "NA"
+country_code = "US"
+latitude = 37.333333
+longitude = -121.9
+
+[sjtug]
+name = "SJTUG"
+url = "https://mirror.sjtu.edu.cn/dragonflybsd/dports"
+continent_code = "AS"
+country_code = "CN"
+latitude = 31.228611
+longitude = 121.474722
