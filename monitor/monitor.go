@@ -52,8 +52,6 @@ func checkMirrors() {
 // Update the status of a mirror accodring to the check result.
 //
 func updateMirror(name string, mirror *common.Mirror, ok bool) {
-	status := map[bool]string{ true: "online", false: "offline" }
-
 	if ok {
 		mirror.Status.OKCount++
 	} else {
@@ -61,8 +59,11 @@ func updateMirror(name string, mirror *common.Mirror, ok bool) {
 	}
 
 	if mirror.Status.Offline == ok {
-		common.WarnPrintf("Mirror [%s]: %s -> %s\n", name,
-				status[!ok], status[ok])
+		if ok {
+			common.InfoPrintf("Mirror [%s] came UP.\n", name)
+		} else {
+			common.WarnPrintf("Mirror [%s] went DOWN!\n", name)
+		}
 		mirror.Status.Offline = !ok
 	}
 }
