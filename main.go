@@ -47,7 +47,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"dragonflybsd/mirrorselect/api"
-	"dragonflybsd/mirrorselect/config"
+	"dragonflybsd/mirrorselect/common"
 	"dragonflybsd/mirrorselect/monitor"
 )
 
@@ -60,7 +60,7 @@ func main() {
 	flag.StringVar(&cfgfile, "config", appName+".toml", "config file")
 	flag.Parse()
 
-	cfg := config.ReadConfig(cfgfile)
+	cfg := common.ReadConfig(cfgfile)
 
 	gin.SetMode(gin.ReleaseMode)
 	if cfg.Debug {

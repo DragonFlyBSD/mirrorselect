@@ -6,10 +6,10 @@ import (
 	"net"
 	"sort"
 
-	"dragonflybsd/mirrorselect/config"
+	"dragonflybsd/mirrorselect/common"
 )
 
-var appConfig = config.AppConfig
+var appConfig = common.AppConfig
 
 type Location struct {
 	ContinentCode	string
@@ -70,18 +70,18 @@ func LookupIP(ip net.IP) (*Location, error) {
 // - Append the default to the last as the fallback.
 // - If location is nil, then return the default mirror.
 //
-func FindMirrors(location *Location) []*config.Mirror {
+func FindMirrors(location *Location) []*common.Mirror {
 	if location == nil {
 		// Return the default mirror
 		for _, mirror := range appConfig.Mirrors {
 			if mirror.IsDefault {
-				return []*config.Mirror{ mirror }
+				return []*common.Mirror{ mirror }
 			}
 		}
 	}
 
-	var m_default *config.Mirror
-	var m_country, m_continent []*config.Mirror
+	var m_default *common.Mirror
+	var m_country, m_continent []*common.Mirror
 	for _, mirror := range appConfig.Mirrors {
 		if mirror.IsDefault {
 			// Just use it even if offline
@@ -101,7 +101,7 @@ func FindMirrors(location *Location) []*config.Mirror {
 	sort.Slice(m_country, fLess(m_country, location))
 	sort.Slice(m_continent, fLess(m_continent, location))
 
-	mirrors := []*config.Mirror{}
+	mirrors := []*common.Mirror{}
 	if len(m_country) > 0 {
 		mirrors = append(mirrors, m_country...)
 	} else if len(m_continent) > 0 {
@@ -117,7 +117,7 @@ func FindMirrors(location *Location) []*config.Mirror {
 // Helper function that returns another function to sort the mirror
 // slice by their distances to the client.
 //
-func fLess(s []*config.Mirror, loc *Location) func(i, j int) bool {
+func fLess(s []*common.Mirror, loc *Location) func(i, j int) bool {
 	return func(i, j int) bool {
 		di := mirrorDistance(s[i], loc)
 		dj := mirrorDistance(s[j], loc)
@@ -127,7 +127,7 @@ func fLess(s []*config.Mirror, loc *Location) func(i, j int) bool {
 
 // Helper function to calculate the distance of mirror to the client.
 //
-func mirrorDistance(mirror *config.Mirror, loc *Location) float64 {
+func mirrorDistance(mirror *common.Mirror, loc *Location) float64 {
 	point1 := Point{
 		Latitude: loc.Latitude,
 		Longitude: loc.Longitude,

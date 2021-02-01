@@ -8,10 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"dragonflybsd/mirrorselect/config"
+	"dragonflybsd/mirrorselect/common"
 )
 
-var appConfig = config.AppConfig
+var appConfig = common.AppConfig
 
 
 // Start a monitor that periodically check the status of all mirrors.
@@ -55,7 +55,7 @@ func checkMirrors() {
 
 // Update the status of a mirror accodring to the check result.
 //
-func updateMirror(name string, mirror *config.Mirror, ok bool) {
+func updateMirror(name string, mirror *common.Mirror, ok bool) {
 	status := map[bool]string{ true: "online", false: "offline" }
 
 	if ok {

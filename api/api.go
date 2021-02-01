@@ -9,11 +9,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"dragonflybsd/mirrorselect/config"
+	"dragonflybsd/mirrorselect/common"
 	"dragonflybsd/mirrorselect/geoip"
 )
 
-var appConfig = config.AppConfig
+var appConfig = common.AppConfig
 
 
 // A demo that simply responses the request.
