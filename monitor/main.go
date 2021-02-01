@@ -58,10 +58,16 @@ func checkMirrors() {
 func updateMirror(name string, mirror *config.Mirror, ok bool) {
 	status := map[bool]string{ true: "online", false: "offline" }
 
-	if mirror.IsOffline == ok {
+	if ok {
+		mirror.Status.OKCount++
+	} else {
+		mirror.Status.ErrorCount++
+	}
+
+	if mirror.Status.Offline == ok {
 		log.Printf("[WARNING] Mirror [%s]: %s -> %s\n", name,
 				status[!ok], status[ok])
-		mirror.IsOffline = !ok
+		mirror.Status.Offline = !ok
 	}
 }
 

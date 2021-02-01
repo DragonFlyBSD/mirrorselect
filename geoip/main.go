@@ -87,7 +87,7 @@ func FindMirrors(location *Location) []*config.Mirror {
 			// Just use it even if offline
 			m_default = mirror
 		}
-		if mirror.IsOffline {
+		if mirror.Status.Offline {
 			continue
 		}
 		if mirror.CountryCode == location.CountryCode {

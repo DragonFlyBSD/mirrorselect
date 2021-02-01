@@ -9,6 +9,13 @@ import (
 	"github.com/spf13/viper"
 )
 
+type MirrorStatus struct {
+	Offline		bool    `json:"offline"`
+	OKCount		int     `json:"ok_count"`
+	ErrorCount	int     `json:"error_count"`
+	Hysteresis	int     `json:"hysteresis"`
+}
+
 type Mirror struct {
 	Name		string  `mapstructure:"name" json:"name"`
 	IsDefault	bool    `mapstructure:"default" json:"default"`
@@ -17,8 +24,7 @@ type Mirror struct {
 	CountryCode	string  `mapstructure:"country_code" json:"country_code"`
 	Latitude	float64 `mapstructure:"latitude" json:"latitude"`
 	Longitude	float64 `mapstructure:"longitude" json:"longitude"`
-	// For mirror determination & monitor
-	IsOffline	bool    `json:"offline"`
+	Status		MirrorStatus `json:"status"`
 }
 
 type MonitorConfig struct {
