@@ -73,7 +73,7 @@ func ReadConfig(cfgfile string) *Config {
 	if !filepath.IsAbs(mlfile) {
 		mlfile = filepath.Join(filepath.Dir(cfgfile), mlfile)
 	}
-	ReadMirrors(mlfile)
+	readMirrors(mlfile)
 
 	mmdbfile := AppConfig.MMDBFile
 	if mmdbfile == "" {
@@ -92,7 +92,7 @@ func ReadConfig(cfgfile string) *Config {
 
 // Read config file of mirrors.
 //
-func ReadMirrors(fname string) {
+func readMirrors(fname string) {
 	v := viper.New()
 	v.SetConfigFile(fname)
 	err := v.ReadInConfig()

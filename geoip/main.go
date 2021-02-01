@@ -98,8 +98,8 @@ func FindMirrors(location *Location) []*config.Mirror {
 		}
 	}
 
-	sort.Slice(m_country, f_less(m_country, location))
-	sort.Slice(m_continent, f_less(m_continent, location))
+	sort.Slice(m_country, fLess(m_country, location))
+	sort.Slice(m_continent, fLess(m_continent, location))
 
 	mirrors := []*config.Mirror{}
 	if len(m_country) > 0 {
@@ -117,17 +117,17 @@ func FindMirrors(location *Location) []*config.Mirror {
 // Helper function that returns another function to sort the mirror
 // slice by their distances to the client.
 //
-func f_less(s []*config.Mirror, loc *Location) func(i, j int) bool {
+func fLess(s []*config.Mirror, loc *Location) func(i, j int) bool {
 	return func(i, j int) bool {
-		di := mirror_distance(s[i], loc)
-		dj := mirror_distance(s[j], loc)
+		di := mirrorDistance(s[i], loc)
+		dj := mirrorDistance(s[j], loc)
 		return di < dj
 	}
 }
 
 // Helper function to calculate the distance of mirror to the client.
 //
-func mirror_distance(mirror *config.Mirror, loc *Location) float64 {
+func mirrorDistance(mirror *config.Mirror, loc *Location) float64 {
 	point1 := Point{
 		Latitude: loc.Latitude,
 		Longitude: loc.Longitude,
