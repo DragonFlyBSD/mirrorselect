@@ -59,12 +59,22 @@ func updateMirror(name string, mirror *common.Mirror, ok bool) {
 	}
 
 	if mirror.Status.Offline == ok {
-		if ok {
-			common.InfoPrintf("Mirror [%s] came UP.\n", name)
-		} else {
-			common.WarnPrintf("Mirror [%s] went DOWN!\n", name)
+		mirror.Status.Hysteresis++
+		common.DebugPrintf("Mirror [%s] hysteresis = %d\n",
+				name, mirror.Status.Hysteresis)
+		if mirror.Status.Hysteresis >= appConfig.Monitor.Hysteresis {
+			mirror.Status.Hysteresis = 0
+			mirror.Status.Offline = !ok
+			if ok {
+				common.InfoPrintf("Mirror [%s] came UP.\n", name)
+			} else {
+				common.WarnPrintf("Mirror [%s] went DOWN!\n", name)
+			}
 		}
-		mirror.Status.Offline = !ok
+	} else {
+		mirror.Status.Hysteresis = 0
+		common.DebugPrintf("Mirror [%s] hysteresis = %d\n",
+				name, mirror.Status.Hysteresis)
 	}
 }
 
