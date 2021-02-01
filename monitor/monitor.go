@@ -3,7 +3,6 @@ package monitor
 import (
 	"crypto/tls"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -17,7 +16,7 @@ var appConfig = common.AppConfig
 // Start a monitor that periodically check the status of all mirrors.
 //
 func StartMonitor() {
-	log.Println("Start mirror monitor.")
+	common.InfoPrintf("Start mirror monitor.\n")
 
 	for {
 		checkMirrors()
@@ -32,6 +31,7 @@ func checkMirrors() {
 	for name, mirror := range appConfig.Mirrors {
 		var ok bool
 		var err error
+
 		if strings.HasPrefix(mirror.URL, "http://") ||
 		   strings.HasPrefix(mirror.URL, "https://") {
 			ok, err = httpCheck(mirror.URL)
@@ -42,11 +42,7 @@ func checkMirrors() {
 			err = fmt.Errorf("Mirror [%s] has invalid URL: %v",
 				name, mirror.URL)
 		}
-
-		if appConfig.Debug {
-			log.Printf("[DEBUG] Mirror [%s]: %v, error: %v\n",
-					name, ok, err)
-		}
+		common.DebugPrintf("Mirror [%s]: %v, error: %v\n", name, ok, err)
 
 		updateMirror(name, mirror, ok)
 	}
@@ -65,7 +61,7 @@ func updateMirror(name string, mirror *common.Mirror, ok bool) {
 	}
 
 	if mirror.Status.Offline == ok {
-		log.Printf("[WARNING] Mirror [%s]: %s -> %s\n", name,
+		common.WarnPrintf("Mirror [%s]: %s -> %s\n", name,
 				status[!ok], status[ok])
 		mirror.Status.Offline = !ok
 	}

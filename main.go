@@ -41,7 +41,6 @@ package main
 import (
 	"flag"
 	"io"
-	"log"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -65,21 +64,21 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 	if cfg.Debug {
 		gin.SetMode(gin.DebugMode)
-		log.Printf("[DEBUG] config: %v", cfg)
-		for name, mirror := range cfg.Mirrors {
-			log.Printf("[DEBUG] Mirror [%s]: %v\n", name, mirror)
-		}
+	}
+	common.DebugPrintf("App config: %v\n", cfg)
+	for name, mirror := range cfg.Mirrors {
+		common.DebugPrintf("Mirror [%s]: %v\n", name, mirror)
 	}
 
 	if cfg.LogFile != "" {
 		f, err := os.OpenFile(cfg.LogFile,
 				os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
-			log.Fatalf("Failed to open logfile: %v\n", err)
+			common.Fatalf("Failed to open logfile: %v\n", err)
 		}
 		gin.DisableConsoleColor()
 		gin.DefaultWriter = io.MultiWriter(f)
-		log.Printf("Write log to file: %s\n", cfg.LogFile)
+		common.InfoPrintf("Write log to file: %s\n", cfg.LogFile)
 	}
 
 	router := gin.Default()
@@ -92,6 +91,6 @@ func main() {
 
 	go monitor.StartMonitor()
 
-	log.Println("Listen on:", cfg.Listen)
+	common.InfoPrintf("Listen on: [%s]\n", cfg.Listen)
 	router.Run(cfg.Listen)
 }

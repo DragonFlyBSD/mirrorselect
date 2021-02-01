@@ -2,7 +2,6 @@ package api
 
 import (
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 	"strings"
@@ -27,20 +26,14 @@ func GetPing(c *gin.Context) {
 func GetIP(c *gin.Context) {
 	ip := net.ParseIP(c.ClientIP())
 	if ip == nil {
-		if appConfig.Debug {
-			log.Printf("[DEBUG] Invalid client IP: %s\n",
-					c.ClientIP())
-		}
+		common.DebugPrintf("Invalid client IP: %s\n", c.ClientIP())
 		c.String(http.StatusBadRequest, "Invalid client IP!\n")
 		return
 	}
 
 	location, err := geoip.LookupIP(ip)
 	if err != nil {
-		if appConfig.Debug {
-			log.Printf("[DEBUG] Lookup IP (%s) error: %v\n",
-					ip.String(), err)
-		}
+		common.DebugPrintf("Lookup IP (%s) error: %v\n", ip.String(), err)
 	}
 
 	info := fmt.Sprintf("IP: %s\n", ip.String())
@@ -66,25 +59,16 @@ func GetMirrors(c *gin.Context) {
 func GetPkgMirrors(c *gin.Context) {
 	ip := net.ParseIP(c.ClientIP())
 	if ip == nil {
-		if appConfig.Debug {
-			log.Printf("[DEBUG] Invalid client IP: %s\n",
-					c.ClientIP())
-		}
+		common.DebugPrintf("Invalid client IP: %s\n", c.ClientIP())
 		c.String(http.StatusBadRequest, "Invalid client IP!\n")
 		return
 	}
 
 	location, err := geoip.LookupIP(ip)
 	if err != nil {
-		if appConfig.Debug {
-			log.Printf("[DEBUG] Lookup IP (%s) error: %v\n",
-					ip.String(), err)
-		}
+		common.DebugPrintf("Lookup IP (%s) error: %v\n", ip.String(), err)
 	}
-	if appConfig.Debug {
-		log.Printf("[DEBUG] Client IP: %s, Location: %v\n",
-				ip.String(), location)
-	}
+	common.DebugPrintf("Client IP: %s, Location: %v\n", ip.String(), location)
 
 	mirrors := geoip.FindMirrors(location)
 	urls := ""

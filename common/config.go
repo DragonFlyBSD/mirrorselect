@@ -1,7 +1,6 @@
 package common
 
 import (
-	"log"
 	"path/filepath"
 	"time"
 
@@ -59,22 +58,22 @@ func ReadConfig(cfgfile string) *Config {
 
 	err := v.ReadInConfig()
 	if err != nil {
-		log.Fatalf("Failed to read config: %v\n", err)
+		Fatalf("Failed to read config: %v\n", err)
 	}
-	log.Println("Read in config file.")
+	InfoPrintf("Read in config file.\n")
 
 	err = v.Unmarshal(AppConfig)
 	if err != nil {
-		log.Fatalf("Failed to unmarshal config: %v\n", err)
+		Fatalf("Failed to unmarshal config: %v\n", err)
 	}
 
 	if !AppConfig.Monitor.TLSVerify {
-		log.Println("WARNING: TLS verification disabled!")
+		WarnPrintf("TLS verification disabled!")
 	}
 
 	mlfile := AppConfig.MirrorListFile
 	if mlfile == "" {
-		log.Fatal("Config [mirror_list] not set")
+		Fatalf("Config [mirror_list] not set")
 	}
 	if !filepath.IsAbs(mlfile) {
 		mlfile = filepath.Join(filepath.Dir(cfgfile), mlfile)
@@ -83,14 +82,14 @@ func ReadConfig(cfgfile string) *Config {
 
 	mmdbfile := AppConfig.MMDBFile
 	if mmdbfile == "" {
-		log.Fatal("Config [mmdb_file] not set")
+		Fatalf("Config [mmdb_file] not set")
 	}
 	if !filepath.IsAbs(mmdbfile) {
 		mmdbfile = filepath.Join(filepath.Dir(cfgfile), mmdbfile)
 	}
 	AppConfig.MMDB, err = maxminddb.Open(mmdbfile)
 	if err != nil {
-		log.Fatalf("Failed to open MMDB: %v\n", err)
+		Fatalf("Failed to open MMDB: %v\n", err)
 	}
 
 	return AppConfig
@@ -103,13 +102,13 @@ func readMirrors(fname string) {
 	v.SetConfigFile(fname)
 	err := v.ReadInConfig()
 	if err != nil {
-		log.Fatalf("Failed to read mirrors: %v\n", err)
+		Fatalf("Failed to read mirrors: %v\n", err)
 	}
-	log.Println("Read in mirrors list.")
+	InfoPrintf("Read in mirrors list.\n")
 
 	err = v.Unmarshal(&AppConfig.Mirrors)
 	if err != nil {
-		log.Fatalf("Failed to unmarshal mirrors: %v\n", err)
+		Fatalf("Failed to unmarshal mirrors: %v\n", err)
 	}
 
 	var defaults []string
@@ -119,9 +118,9 @@ func readMirrors(fname string) {
 		}
 	}
 	if len(defaults) == 0 {
-		log.Fatalf("No default mirror set.\n")
+		Fatalf("No default mirror set.\n")
 	}
 	if len(defaults) > 1 {
-		log.Fatalf("More than one default mirrors: %v", defaults)
+		Fatalf("More than one default mirrors: %v", defaults)
 	}
 }
