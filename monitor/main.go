@@ -29,32 +29,39 @@ func StartMonitor() {
 // Perform one round of check of all mirrors and update their status.
 //
 func checkMirrors() {
-	status := map[bool]string{ true: "online", false: "offline" }
-
 	for name, mirror := range appConfig.Mirrors {
-		var is_online bool
+		var ok bool
 		var err error
 		if strings.HasPrefix(mirror.URL, "http://") ||
 		   strings.HasPrefix(mirror.URL, "https://") {
-			is_online, err = httpCheck(mirror.URL)
+			ok, err = httpCheck(mirror.URL)
 		} else if strings.HasPrefix(mirror.URL, "ftp://") {
 			// TODO
 		} else {
-			is_online = false
+			ok = false
 			err = fmt.Errorf("Mirror [%s] has invalid URL: %v",
 				name, mirror.URL)
 		}
 
 		if appConfig.Debug {
 			log.Printf("[DEBUG] Mirror [%s]: %v, error: %v\n",
-					name, is_online, err)
+					name, ok, err)
 		}
 
-		if mirror.IsOffline == is_online {
-			log.Printf("[WARNING] Mirror [%s]: %s -> %s\n", name,
-					status[!is_online], status[is_online])
-			mirror.IsOffline = !is_online
-		}
+		updateMirror(name, mirror, ok)
+	}
+}
+
+
+// Update the status of a mirror accodring to the check result.
+//
+func updateMirror(name string, mirror *config.Mirror, ok bool) {
+	status := map[bool]string{ true: "online", false: "offline" }
+
+	if mirror.IsOffline == ok {
+		log.Printf("[WARNING] Mirror [%s]: %s -> %s\n", name,
+				status[!ok], status[ok])
+		mirror.IsOffline = !ok
 	}
 }
 
