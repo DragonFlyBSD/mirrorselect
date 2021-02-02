@@ -9,7 +9,7 @@ import (
 )
 
 type MirrorStatus struct {
-	Offline		bool    `json:"offline"`
+	Online		bool    `json:"online"`
 	OKCount		int     `json:"ok_count"`
 	ErrorCount	int     `json:"error_count"`
 	Hysteresis	int     `json:"hysteresis"`
@@ -126,6 +126,7 @@ func readMirrors(fname string) {
 	}
 
 	for name, mirror := range AppConfig.Mirrors {
+		mirror.Status.Online = true
 		DebugPrintf("Mirror [%s]: %v\n", name, mirror)
 	}
 }

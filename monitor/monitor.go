@@ -29,43 +29,44 @@ func StartMonitor() {
 //
 func checkMirrors() {
 	for name, mirror := range appConfig.Mirrors {
-		var ok bool
+		var status bool
 		var err error
 
 		if strings.HasPrefix(mirror.URL, "http://") ||
 		   strings.HasPrefix(mirror.URL, "https://") {
-			ok, err = httpCheck(mirror.URL)
+			status, err = httpCheck(mirror.URL)
 		} else if strings.HasPrefix(mirror.URL, "ftp://") {
 			// TODO
 		} else {
-			ok = false
+			status = false
 			err = fmt.Errorf("Mirror [%s] has invalid URL: %v",
 				name, mirror.URL)
 		}
-		common.DebugPrintf("Mirror [%s]: %v, error: %v\n", name, ok, err)
+		common.DebugPrintf("Mirror [%s]: %v, error: %v\n",
+				name, status, err)
 
-		updateMirror(name, mirror, ok)
+		updateMirror(name, mirror, status)
 	}
 }
 
 
 // Update the status of a mirror accodring to the check result.
 //
-func updateMirror(name string, mirror *common.Mirror, ok bool) {
-	if ok {
+func updateMirror(name string, mirror *common.Mirror, status bool) {
+	if status {
 		mirror.Status.OKCount++
 	} else {
 		mirror.Status.ErrorCount++
 	}
 
-	if mirror.Status.Offline == ok {
+	if mirror.Status.Online != status {
 		mirror.Status.Hysteresis++
 		common.DebugPrintf("Mirror [%s] hysteresis = %d\n",
 				name, mirror.Status.Hysteresis)
 		if mirror.Status.Hysteresis >= appConfig.Monitor.Hysteresis {
 			mirror.Status.Hysteresis = 0
-			mirror.Status.Offline = !ok
-			if ok {
+			mirror.Status.Online = status
+			if status {
 				common.InfoPrintf("Mirror [%s] came UP.\n", name)
 			} else {
 				common.WarnPrintf("Mirror [%s] went DOWN!\n", name)
