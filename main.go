@@ -45,9 +45,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"dragonflybsd/mirrorselect/api"
-	"dragonflybsd/mirrorselect/common"
-	"dragonflybsd/mirrorselect/monitor"
+	"github.com/DragonFlyBSD/mirrorselect/api"
+	"github.com/DragonFlyBSD/mirrorselect/common"
+	"github.com/DragonFlyBSD/mirrorselect/monitor"
 )
 
 const (

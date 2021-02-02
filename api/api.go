@@ -8,8 +8,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"dragonflybsd/mirrorselect/common"
-	"dragonflybsd/mirrorselect/geoip"
+	"github.com/DragonFlyBSD/mirrorselect/common"
+	"github.com/DragonFlyBSD/mirrorselect/geoip"
 )
 
 var appConfig = common.AppConfig

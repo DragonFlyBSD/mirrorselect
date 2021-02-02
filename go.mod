@@ -1,4 +1,4 @@
-module dragonflybsd/mirrorselect
+module github.com/DragonFlyBSD/mirrorselect
 
 go 1.15
 

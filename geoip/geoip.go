@@ -6,7 +6,7 @@ import (
 	"net"
 	"sort"
 
-	"dragonflybsd/mirrorselect/common"
+	"github.com/DragonFlyBSD/mirrorselect/common"
 )
 
 var appConfig = common.AppConfig

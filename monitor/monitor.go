@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"dragonflybsd/mirrorselect/common"
+	"github.com/DragonFlyBSD/mirrorselect/common"
 )
 
 var appConfig = common.AppConfig
