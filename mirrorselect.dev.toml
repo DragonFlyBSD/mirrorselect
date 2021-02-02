@@ -15,9 +15,9 @@ mirror_list = "mirrors.dev.toml"
 
 # Type of the following MaxMind database file
 # (choices: dbip, maxmind)
-mmdb_type = "maxmind"
+mmdb_type = "dbip"
 # MaxMind database file (path relative to this file)
-mmdb_file = "GeoLite2-City_20201006.mmdb"
+mmdb_file = "dbip-city-lite-2021-02.mmdb"
 
 # Settings for mirror monitor
 #
