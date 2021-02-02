@@ -44,13 +44,24 @@ URL: ...
 URL: https://mirror-master.dragonflybsd.org/dports/dragonfly:5.10:x86:64/LATEST
 ```
 
+Deployment
+----------
+1. Prepare the mirror list file `mirrors.toml`, listing all available
+   pkg(8) mirrors and their locations.
+2. Obtain one of the following **free** IP geolocation database
+   (choose **MMDB** binary format):
+   * [DB-IP Lite data](https://db-ip.com/db/download/ip-to-city-lite)
+     <br>
+     *Recommended*, more entries and higher precision, no sign-up required.
+   * [MaxMind GeoLite2 data](https://dev.maxmind.com/geoip/geoip2/geolite2/)
+     <br>
+     NOTE: sign-up required to download the database.
+3. Create the main config file `mirrorselect.toml`.
+4. Run the **mirrorselect** service as a normal user (e.g., `nobody`).
+5. Publish this service via Nginx/Apache.
+
 License
 -------
 The 3-Clause BSD License
 
 Copyright (c) 2021 The DragonFly Project.
-
-This product includes
-[GeoLite2 data](https://dev.maxmind.com/geoip/geoip2/geolite2/)
-created by MaxMind, available from
-[https://www.maxmind.com](https://www.maxmind.com).
