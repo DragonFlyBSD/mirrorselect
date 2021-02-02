@@ -92,6 +92,7 @@ func ReadConfig(cfgfile string) *Config {
 		Fatalf("Failed to open MMDB: %v\n", err)
 	}
 
+	DebugPrintf("App config: %v\n", AppConfig)
 	return AppConfig
 }
 
@@ -122,5 +123,9 @@ func readMirrors(fname string) {
 	}
 	if len(defaults) > 1 {
 		Fatalf("More than one default mirrors: %v", defaults)
+	}
+
+	for name, mirror := range AppConfig.Mirrors {
+		DebugPrintf("Mirror [%s]: %v\n", name, mirror)
 	}
 }

@@ -65,10 +65,6 @@ func main() {
 	if cfg.Debug {
 		gin.SetMode(gin.DebugMode)
 	}
-	common.DebugPrintf("App config: %v\n", cfg)
-	for name, mirror := range cfg.Mirrors {
-		common.DebugPrintf("Mirror [%s]: %v\n", name, mirror)
-	}
 
 	if cfg.LogFile != "" {
 		f, err := os.OpenFile(cfg.LogFile,
