@@ -3,6 +3,7 @@ package common
 import (
 	"path/filepath"
 	"time"
+	"strings"
 
 	"github.com/oschwald/maxminddb-golang"
 	"github.com/spf13/viper"
@@ -26,6 +27,11 @@ type Mirror struct {
 	Status		MirrorStatus `json:"status"`
 }
 
+type MMDBConfig struct {
+	Type		int
+	DB		*maxminddb.Reader
+}
+
 type MonitorConfig struct {
 	Interval	time.Duration `mapstructure:"interval"`
 	Timeout		time.Duration `mapstructure:"timeout"`
@@ -39,10 +45,16 @@ type Config struct {
 	LogFile		string `mapstructure:"log_file"`
 	MirrorListFile	string `mapstructure:"mirror_list"`
 	Mirrors		map[string]*Mirror
+	MMDBType	string `mapstructure:"mmdb_type"`
 	MMDBFile	string `mapstructure:"mmdb_file"`
-	MMDB		*maxminddb.Reader
+	MMDB		MMDBConfig
 	Monitor		MonitorConfig
 }
+
+const (
+	MMDB_DBIP = iota
+	MMDB_MAXMIND
+)
 
 var AppConfig *Config = &Config{}
 
@@ -80,6 +92,15 @@ func ReadConfig(cfgfile string) *Config {
 	}
 	readMirrors(mlfile)
 
+	switch strings.ToLower(AppConfig.MMDBType) {
+	case "db-ip", "dbip":
+		AppConfig.MMDB.Type = MMDB_DBIP
+	case "maxmind":
+		AppConfig.MMDB.Type = MMDB_MAXMIND
+	default:
+		Fatalf("Config [mmdb_type] invalid: %v", AppConfig.MMDBType)
+	}
+
 	mmdbfile := AppConfig.MMDBFile
 	if mmdbfile == "" {
 		Fatalf("Config [mmdb_file] not set")
@@ -87,7 +108,7 @@ func ReadConfig(cfgfile string) *Config {
 	if !filepath.IsAbs(mmdbfile) {
 		mmdbfile = filepath.Join(filepath.Dir(cfgfile), mmdbfile)
 	}
-	AppConfig.MMDB, err = maxminddb.Open(mmdbfile)
+	AppConfig.MMDB.DB, err = maxminddb.Open(mmdbfile)
 	if err != nil {
 		Fatalf("Failed to open MMDB: %v\n", err)
 	}

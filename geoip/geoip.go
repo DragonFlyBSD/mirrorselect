@@ -23,11 +23,14 @@ type Point struct {
 	Longitude	float64
 }
 
-type CityRecord struct {
+// MaxMind and DB-IP use the same schema for the selected fields here.
+type Record struct {
 	Continent struct {
+		// Two-letter code
 		Code		string  `maxminddb:"code"`
 	} `maxminddb:"continent"`
 	Country struct {
+		// Two-letter code
 		Code		string  `maxminddb:"iso_code"`
 	} `maxminddb:"country"`
 	Location struct {
@@ -40,8 +43,8 @@ type CityRecord struct {
 // Lookup the location data in MMDB for the IP address.
 //
 func LookupIP(ip net.IP) (*Location, error) {
-	var record CityRecord
-	_, ok, err := appConfig.MMDB.LookupNetwork(ip, &record)
+	var record Record
+	_, ok, err := appConfig.MMDB.DB.LookupNetwork(ip, &record)
 	if err != nil {
 		return nil, err
 	}

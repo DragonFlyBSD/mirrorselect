@@ -13,7 +13,10 @@ listen = "127.0.0.1:3130"
 # File containing the mirrors (path relative to this file)
 mirror_list = "mirrors.dev.toml"
 
-# MaxMind GeoLite2 database file
+# Type of the following MaxMind database file
+# (choices: dbip, maxmind)
+mmdb_type = "maxmind"
+# MaxMind database file (path relative to this file)
 mmdb_file = "GeoLite2-City_20201006.mmdb"
 
 # Settings for mirror monitor
