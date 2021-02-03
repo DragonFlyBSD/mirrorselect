@@ -3,7 +3,6 @@ package common
 import (
 	"log"
 	"os"
-	"strings"
 )
 
 var (
@@ -21,30 +20,17 @@ func DebugPrintf(format string, v ...interface{}) {
 	if !AppConfig.Debug {
 		return
 	}
-
-	if !strings.HasSuffix(format, "\n") {
-		format += "\n"
-	}
 	errLogger.Printf("[DEBUG] " + format, v...)
 }
 
 func InfoPrintf(format string, v ...interface{}) {
-	if !strings.HasSuffix(format, "\n") {
-		format += "\n"
-	}
 	outLogger.Printf("[INFO] " + format, v...)
 }
 
 func WarnPrintf(format string, v ...interface{}) {
-	if !strings.HasSuffix(format, "\n") {
-		format += "\n"
-	}
 	errLogger.Printf("[WARNING] " + format, v...)
 }
 
 func Fatalf(format string, v ...interface{}) {
-	if !strings.HasSuffix(format, "\n") {
-		format += "\n"
-	}
 	errLogger.Fatalf("[FATAL] " + format, v...)
 }
