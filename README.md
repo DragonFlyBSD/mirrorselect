@@ -20,6 +20,25 @@ The selected mirrors and their ordering are:
 * Append the *default* mirror to the last as fallback.
 * If cannot determine client's location, just return the *default* mirror.
 
+Features
+--------
+* Simple and small:
+  - simple config files
+  - few direct dependencies:
+  [gin-gonic/gin](https://github.com/gin-gonic/gin),
+  [oschwald/maxminddb-golang](https://github.com/oschwald/maxminddb-golang),
+  [spf13/viper](https://github.com/spf13/viper),
+  [jlaffaye/ftp](https://github.com/jlaffaye/ftp)
+* Stand-alone:
+  - use offline IP geolocation database
+  - [MaxMind DB format](https://maxmind.github.io/MaxMind-DB/)
+  - support both [MaxMind](https://www.maxmind.com) and
+  [DB-IP](https://db-ip.com) dataset
+* Built-in mirror monitor:
+  - periodically check mirror status
+  - support HTTP, HTTPS and FTP
+  - use a hysteresis to smooth status flipping
+
 Implementation
 --------------
 This mirror selection implementation leverages pkg(8)'s **HTTP**
