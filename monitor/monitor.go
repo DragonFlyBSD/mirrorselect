@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os/exec"
 	"time"
 
 	"github.com/jlaffaye/ftp"
@@ -76,6 +77,7 @@ func updateMirror(name string, mirror *common.Mirror, status bool) {
 			} else {
 				common.WarnPrintf("Mirror [%s] went DOWN!\n", name)
 			}
+			notifyExec(name, status)
 		}
 	} else {
 		mirror.Status.Hysteresis = 0
@@ -151,4 +153,29 @@ func ftpCheck(u *url.URL) (bool, error) {
 	}
 
 	return true, nil
+}
+
+
+// Publish the mirror event by invoking the configured notification
+// executable.
+//
+func notifyExec(name string, status bool) {
+	if appConfig.Monitor.NotifyExec == "" {
+		return
+	}
+
+	event := "DOWN"
+	if status {
+		event = "UP"
+	}
+	cmd := exec.Command(appConfig.Monitor.NotifyExec, name, event)
+	common.DebugPrintf("Command: %s\n", cmd.String())
+	output, err := cmd.CombinedOutput()
+	if output != nil && len(output) > 0 {
+		common.InfoPrintf("Command output: %s", output)
+	}
+	if err != nil {
+		common.WarnPrintf("Command (%s) failed: %v\n",
+				cmd.String(), err)
+	}
 }

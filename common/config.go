@@ -38,6 +38,7 @@ type MonitorConfig struct {
 	Timeout		time.Duration `mapstructure:"timeout"`
 	Hysteresis	int           `mapstructure:"hysteresis"`
 	TLSVerify	bool          `mapstructure:"tls_verify"`
+	NotifyExec	string        `mapstructure:"notify_exec"`
 }
 
 type Config struct {

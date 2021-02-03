@@ -19,14 +19,23 @@ mmdb_type = "dbip"
 # MaxMind database file (path relative to this file)
 mmdb_file = "dbip-city-lite-2021-02.mmdb"
 
+#
 # Settings for mirror monitor
 #
 [monitor]
+
 # Interval in seconds between monitor rounds
 interval = 60
+
 # Timeout set for requesting mirrors
 timeout = 5
+
 # Number of consecutive opposite status before flipping mirror's status
 hysteresis = 3
+
 # Whether to verify the server's certificate?
 tls_verify = false
+
+# Executable to invoke when a mirror is down/up
+# The command to run is: $notify_exec <mirror_name> <DOWN|UP>
+notify_exec = "echo"

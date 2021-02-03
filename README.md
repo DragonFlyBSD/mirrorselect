@@ -38,6 +38,7 @@ Features
   - periodically check mirror status
   - support HTTP, HTTPS and FTP
   - use a hysteresis to smooth status flipping
+  - run a command when a mirror is down/up to publish events
 
 Implementation
 --------------
