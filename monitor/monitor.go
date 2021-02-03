@@ -4,7 +4,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
-	"strings"
+	"net/url"
 	"time"
 
 	"github.com/DragonFlyBSD/mirrorselect/common"
@@ -29,18 +29,21 @@ func StartMonitor() {
 //
 func checkMirrors() {
 	for name, mirror := range appConfig.Mirrors {
-		var status bool
-		var err error
+		u, err := url.Parse(mirror.URL)
+		if err != nil {
+			common.Fatalf("Mirror [%s] URL invalid: %v\n",
+					name, mirror.URL)
+		}
 
-		if strings.HasPrefix(mirror.URL, "http://") ||
-		   strings.HasPrefix(mirror.URL, "https://") {
-			status, err = httpCheck(mirror.URL)
-		} else if strings.HasPrefix(mirror.URL, "ftp://") {
+		status := false
+		switch u.Scheme {
+		case "http", "https":
+			status, err = httpCheck(u)
+		case "ftp":
 			// TODO
-		} else {
-			status = false
-			err = fmt.Errorf("Mirror [%s] has invalid URL: %v",
-				name, mirror.URL)
+		default:
+			common.Fatalf("Mirror [%s] URL unsupported: %v\n",
+					name, mirror.URL)
 		}
 		common.DebugPrintf("Mirror [%s]: %v, error: %v\n",
 				name, status, err)
@@ -80,19 +83,15 @@ func updateMirror(name string, mirror *common.Mirror, status bool) {
 }
 
 
-// Check the given HTTP URL to determine whether it's accessible.
+// Check the given HTTP/HTTPS URL to determine whether it's accessible.
 //
-func httpCheck(url string) (bool, error) {
-	if !strings.HasPrefix(url, "http://") &&
-	   !strings.HasPrefix(url, "https://") {
-		return false, fmt.Errorf("Invalid HTTP(s) URL: %v", url)
-	}
-	if !strings.HasSuffix(url, "/") {
-		url += "/"
+func httpCheck(u *url.URL) (bool, error) {
+	if u.Scheme != "http" && u.Scheme != "https" {
+		return false, fmt.Errorf("Invalid HTTP(s) URL: %v", u.String())
 	}
 
 	var tr *http.Transport
-	if strings.HasPrefix(url, "https:") && !appConfig.Monitor.TLSVerify {
+	if u.Scheme == "https" && !appConfig.Monitor.TLSVerify {
 		tr = http.DefaultTransport.(*http.Transport).Clone()
 		tr.TLSClientConfig = &tls.Config{ InsecureSkipVerify: true }
 	}
@@ -102,7 +101,7 @@ func httpCheck(url string) (bool, error) {
 		Timeout: appConfig.Monitor.Timeout * time.Second,
 	}
 
-	resp, err := client.Get(url)
+	resp, err := client.Get(u.String())
 	if err != nil {
 		return false, err
 	}
