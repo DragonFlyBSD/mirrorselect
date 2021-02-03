@@ -7,6 +7,8 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/jlaffaye/ftp"
+
 	"github.com/DragonFlyBSD/mirrorselect/common"
 )
 
@@ -40,7 +42,7 @@ func checkMirrors() {
 		case "http", "https":
 			status, err = httpCheck(u)
 		case "ftp":
-			// TODO
+			status, err = ftpCheck(u)
 		default:
 			common.Fatalf("Mirror [%s] URL unsupported: %v\n",
 					name, mirror.URL)
@@ -110,6 +112,42 @@ func httpCheck(u *url.URL) (bool, error) {
 	if resp.StatusCode != http.StatusOK {
 		return false, fmt.Errorf("Status code (%d) != OK",
 				resp.StatusCode)
+	}
+
+	return true, nil
+}
+
+
+// Check the given FTP URL to determine whether it's accessible.
+//
+func ftpCheck(u *url.URL) (bool, error) {
+	if u.Scheme != "ftp" {
+		return false, fmt.Errorf("Invalid FTP URL: %v", u.String())
+	}
+
+	addr := u.Host
+	if u.Port() == "" {
+		addr += ":21"
+	}
+
+	timeout := appConfig.Monitor.Timeout * time.Second
+	conn, err := ftp.Dial(addr, ftp.DialWithTimeout(timeout))
+	if err != nil {
+		return false, err
+	}
+
+	err = conn.Login("anonymous", "anonymous")
+	if err != nil {
+		return false, err
+	}
+	err = conn.ChangeDir(u.Path)
+	if err != nil {
+		return false, err
+	}
+
+	err = conn.Quit()
+	if err != nil {
+		return false, err
 	}
 
 	return true, nil
