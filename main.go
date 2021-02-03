@@ -42,6 +42,7 @@ import (
 	"flag"
 	"io"
 	"os"
+	"os/user"
 
 	"github.com/gin-gonic/gin"
 
@@ -58,6 +59,10 @@ func main() {
 	var cfgfile string
 	flag.StringVar(&cfgfile, "config", appName+".toml", "config file")
 	flag.Parse()
+
+	if u, _ := user.Current(); u.Uid == "0" {
+		common.WarnPrintf("Running as root (uid=0) is discouraged!!!")
+	}
 
 	cfg := common.ReadConfig(cfgfile)
 
