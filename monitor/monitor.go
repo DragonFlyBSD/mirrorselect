@@ -1,6 +1,7 @@
 package monitor
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"net/http"
@@ -77,7 +78,7 @@ func updateMirror(name string, mirror *common.Mirror, status bool) {
 			} else {
 				common.WarnPrintf("Mirror [%s] went DOWN!\n", name)
 			}
-			notifyExec(name, status)
+			go notifyExec(name, status)
 		}
 	} else {
 		mirror.Status.Hysteresis = 0
@@ -168,7 +169,12 @@ func notifyExec(name string, status bool) {
 	if status {
 		event = "UP"
 	}
-	cmd := exec.Command(appConfig.Monitor.NotifyExec, name, event)
+
+	timeout := appConfig.Monitor.ExecTimeout * time.Second
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	cmd := exec.CommandContext(ctx, appConfig.Monitor.NotifyExec, name, event)
 	common.DebugPrintf("Command: %s\n", cmd.String())
 	output, err := cmd.CombinedOutput()
 	if output != nil && len(output) > 0 {

@@ -39,3 +39,6 @@ tls_verify = false
 # Executable to invoke when a mirror is down/up
 # The command to run is: $notify_exec <mirror_name> <DOWN|UP>
 notify_exec = "echo"
+
+# Timeout for executing the above command (unit: second)
+exec_timeout = 5
