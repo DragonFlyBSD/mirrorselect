@@ -1,6 +1,7 @@
 package common
 
 import (
+	"net/url"
 	"path/filepath"
 	"time"
 	"strings"
@@ -135,10 +136,24 @@ func readMirrors(fname string) {
 
 	var defaults []string
 	for name, mirror := range AppConfig.Mirrors {
+		u, err := url.Parse(mirror.URL)
+		if err != nil {
+			Fatalf("Mirror [%s] URL invalid: %v\n",
+					name, mirror.URL)
+		}
+		switch u.Scheme {
+		case "http", "https", "ftp":
+			break
+		default:
+			Fatalf("Mirror [%s] URL unsupported: %v\n",
+					name, mirror.URL)
+		}
+
 		if mirror.IsDefault {
 			defaults = append(defaults, name)
 		}
 	}
+
 	if len(defaults) == 0 {
 		Fatalf("No default mirror set.\n")
 	}
