@@ -68,6 +68,9 @@ func ReadConfig(cfgfile string) *Config {
 	v.SetConfigFile(cfgfile)
 	v.SetDefault("debug", false)
 	v.SetDefault("listen", "127.0.0.1:3130")
+	v.SetDefault("monitor.interval", 3600)  // hourly
+	v.SetDefault("monitor.timeout", 5)
+	v.SetDefault("monitor.hysteresis", 3)
 	v.SetDefault("monitor.tls_verify", true)
 
 	err := v.ReadInConfig()
