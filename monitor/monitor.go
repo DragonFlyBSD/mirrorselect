@@ -181,9 +181,8 @@ func notifyExec(name string, status bool) {
 		common.InfoPrintf("Command output: %s", output)
 	}
 	if ctx.Err() != nil {
-		common.WarnPrintf("Command (%s) timed out!\n", cmd.String())
+		common.ErrorPrintf("Command (%s) timed out!\n", cmd.String())
 	} else if err != nil {
-		common.WarnPrintf("Command (%s) failed: %v\n",
-				cmd.String(), err)
+		common.ErrorPrintf("Command (%s) failed: %v\n", cmd.String(), err)
 	}
 }

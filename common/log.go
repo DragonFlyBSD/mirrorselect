@@ -31,6 +31,10 @@ func WarnPrintf(format string, v ...interface{}) {
 	errLogger.Printf("[WARNING] " + format, v...)
 }
 
+func ErrorPrintf(format string, v ...interface{}) {
+	errLogger.Printf("[ERROR] " + format, v...)
+}
+
 func Fatalf(format string, v ...interface{}) {
 	errLogger.Fatalf("[FATAL] " + format, v...)
 }
