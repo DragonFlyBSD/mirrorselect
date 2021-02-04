@@ -36,6 +36,9 @@ hysteresis = 3
 # Whether to verify the server's certificate?
 tls_verify = false
 
+# Custom User-Agent header (default: mirrorselect/<version>)
+#user_agent = "customized user-agent string ..."
+
 # Executable to invoke when a mirror is down/up
 # The command to run is: $notify_exec <mirror_name> <DOWN|UP>
 notify_exec = "echo"

@@ -38,6 +38,7 @@ type MonitorConfig struct {
 	Timeout		time.Duration `mapstructure:"timeout"`
 	Hysteresis	int           `mapstructure:"hysteresis"`
 	TLSVerify	bool          `mapstructure:"tls_verify"`
+	UserAgent	string        `mapstructure:"user_agent"`
 	NotifyExec	string        `mapstructure:"notify_exec"`
 	ExecTimeout	time.Duration `mapstructure:"exec_timeout"`
 }
@@ -73,6 +74,7 @@ func ReadConfig(cfgfile string) *Config {
 	v.SetDefault("monitor.timeout", 5)
 	v.SetDefault("monitor.hysteresis", 3)
 	v.SetDefault("monitor.tls_verify", true)
+	v.SetDefault("monitor.user_agent", AppName+"/"+Version)
 	v.SetDefault("monitor.exec_timeout", 3)
 
 	err := v.ReadInConfig()

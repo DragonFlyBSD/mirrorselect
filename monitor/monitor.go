@@ -110,6 +110,7 @@ func httpCheck(u *url.URL) (bool, error) {
 
 	req.Host = u.Host
 	req.Header.Set("Accept", "*/*")
+	req.Header.Set("User-Agent", appConfig.Monitor.UserAgent)
 
 	resp, err := client.Do(req)
 	if err != nil {
