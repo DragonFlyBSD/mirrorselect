@@ -155,8 +155,12 @@ func readMirrors(fname string) {
 					name, mirror.URL)
 		}
 
+		mirror.Status.Online = true
+		DebugPrintf("Mirror [%s]: %v\n", name, mirror)
+
 		if mirror.IsDefault {
 			defaults = append(defaults, name)
+			InfoPrintf("Default mirror: %s\n", name)
 		}
 	}
 
@@ -165,10 +169,5 @@ func readMirrors(fname string) {
 	}
 	if len(defaults) > 1 {
 		Fatalf("More than one default mirrors: %v", defaults)
-	}
-
-	for name, mirror := range AppConfig.Mirrors {
-		mirror.Status.Online = true
-		DebugPrintf("Mirror [%s]: %v\n", name, mirror)
 	}
 }
