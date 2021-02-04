@@ -103,7 +103,15 @@ func httpCheck(u *url.URL) (bool, error) {
 		client.Transport = tr
 	}
 
-	resp, err := client.Get(u.String())
+	req, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		return false, err
+	}
+
+	req.Host = u.Host
+	req.Header.Set("Accept", "*/*")
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return false, err
 	}
