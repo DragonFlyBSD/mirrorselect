@@ -40,6 +40,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"io"
 	"os"
 	"os/user"
@@ -53,8 +54,15 @@ import (
 
 func main() {
 	var cfgfile string
+	var f_version bool
 	flag.StringVar(&cfgfile, "config", common.AppName+".toml", "config file")
+	flag.BoolVar(&f_version, "version", false, "show version")
 	flag.Parse()
+
+	if f_version {
+		fmt.Printf("%s - %s\n", common.AppName, common.Version)
+		return
+	}
 
 	if u, _ := user.Current(); u.Uid == "0" {
 		common.WarnPrintf("Running as root (uid=0) is discouraged!!!")
