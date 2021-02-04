@@ -51,13 +51,9 @@ import (
 	"github.com/DragonFlyBSD/mirrorselect/monitor"
 )
 
-const (
-	appName = "mirrorselect"
-)
-
 func main() {
 	var cfgfile string
-	flag.StringVar(&cfgfile, "config", appName+".toml", "config file")
+	flag.StringVar(&cfgfile, "config", common.AppName+".toml", "config file")
 	flag.Parse()
 
 	if u, _ := user.Current(); u.Uid == "0" {
