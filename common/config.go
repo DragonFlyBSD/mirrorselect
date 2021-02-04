@@ -87,7 +87,7 @@ func ReadConfig(cfgfile string) *Config {
 	}
 
 	if !AppConfig.Monitor.TLSVerify {
-		WarnPrintf("TLS verification disabled!")
+		WarnPrintf("TLS verification disabled! THIS IS INSECURE!!!")
 	}
 
 	mlfile := AppConfig.MirrorListFile
