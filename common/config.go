@@ -63,11 +63,8 @@ const (
 var AppConfig *Config = &Config{}
 
 
-// Read main configurations from file.
-//
-func ReadConfig(cfgfile string) *Config {
+func init() {
 	v := viper.New()
-	v.SetConfigFile(cfgfile)
 	v.SetDefault("debug", false)
 	v.SetDefault("listen", "127.0.0.1:3130")
 	v.SetDefault("monitor.interval", 3600)  // hourly
@@ -77,6 +74,18 @@ func ReadConfig(cfgfile string) *Config {
 	v.SetDefault("monitor.user_agent", AppName+"/"+Version)
 	v.SetDefault("monitor.exec_timeout", 3)
 
+	err := v.Unmarshal(AppConfig)
+	if err != nil {
+		Fatalf("Failed to initialize config: %v\n", err)
+	}
+}
+
+
+// Read main configurations from file.
+//
+func ReadConfig(cfgfile string) *Config {
+	v := viper.New()
+	v.SetConfigFile(cfgfile)
 	err := v.ReadInConfig()
 	if err != nil {
 		Fatalf("Failed to read config: %v\n", err)
