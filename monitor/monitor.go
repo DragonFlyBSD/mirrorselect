@@ -96,11 +96,14 @@ func httpCheck(u *url.URL) (bool, error) {
 	}
 
 	timeout := appConfig.Monitor.Timeout * time.Second
-	client := &http.Client{ Timeout: timeout }
-	if !appConfig.Monitor.TLSVerify {
-		tr := http.DefaultTransport.(*http.Transport).Clone()
-		tr.TLSClientConfig = &tls.Config{ InsecureSkipVerify: true }
-		client.Transport = tr
+	tr := http.DefaultTransport.(*http.Transport).Clone()
+	tr.TLSClientConfig = &tls.Config{
+		InsecureSkipVerify: !appConfig.Monitor.TLSVerify,
+		ServerName: u.Hostname(),
+	}
+	client := &http.Client{
+		Timeout: timeout,
+		Transport: tr,
 	}
 
 	req, err := http.NewRequest("GET", u.String(), nil)
