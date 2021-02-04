@@ -95,15 +95,12 @@ func httpCheck(u *url.URL) (bool, error) {
 		return false, fmt.Errorf("Invalid HTTP(s) URL: %v", u.String())
 	}
 
-	var tr *http.Transport
-	if u.Scheme == "https" && !appConfig.Monitor.TLSVerify {
-		tr = http.DefaultTransport.(*http.Transport).Clone()
+	timeout := appConfig.Monitor.Timeout * time.Second
+	client := &http.Client{ Timeout: timeout }
+	if !appConfig.Monitor.TLSVerify {
+		tr := http.DefaultTransport.(*http.Transport).Clone()
 		tr.TLSClientConfig = &tls.Config{ InsecureSkipVerify: true }
-	}
-
-	client := &http.Client{
-		Transport: tr,
-		Timeout: appConfig.Monitor.Timeout * time.Second,
+		client.Transport = tr
 	}
 
 	resp, err := client.Get(u.String())
