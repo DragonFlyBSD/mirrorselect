@@ -153,6 +153,11 @@ func readMirrors(fname string) {
 
 	var defaults []string
 	for name, mirror := range AppConfig.Mirrors {
+		// Some mirrors may return 404 if there is no trailing slash.
+		if !strings.HasSuffix(mirror.URL, "/") {
+			mirror.URL += "/"
+		}
+
 		u, err := url.Parse(mirror.URL)
 		if err != nil {
 			Fatalf("Mirror [%s] URL invalid: %v\n",
