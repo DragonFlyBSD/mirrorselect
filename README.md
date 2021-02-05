@@ -49,9 +49,10 @@ Basically, the repository URL provides a sequence of lines beginning with
 mirror.
 Then, pkg(8) tries these mirrors in the order listed until a download
 succeeds.
+
 See also: [pkg-repository(5)](https://man.dragonflybsd.org/?command=pkg-repository&section=5)
 
-For example, configure the pkg repos as:
+For example, configure the pkg(8) repos as:
 ```
 AUTO: {
 	url: https://pkg.dragonflybsd.org/pkg/${ABI}/LATEST
@@ -66,6 +67,8 @@ URL: ...
 URL: https://mirror-master.dragonflybsd.org/dports/dragonfly:5.10:x86:64/LATEST
 ```
 
+NOTE: The `${ABI}` is expanded by pkg(8) on the client side.
+
 Deployment
 ----------
 1. Prepare the mirror list file `mirrors.toml`, listing all available
@@ -79,8 +82,23 @@ Deployment
      <br>
      NOTE: sign-up required to download the database.
 3. Create the main config file `mirrorselect.toml`.
-4. Run the **mirrorselect** service as a normal user (e.g., `nobody`).
+4. Run **mirrorselect** as a **normal** user (e.g., `nobody`).
 5. Publish this service via Nginx/Apache.
+
+Services
+--------
+* `/`:
+  For testing, just reply a `pong`, same as the `/ping` below.
+* `/ping`:
+  For testing, just reply a `pong`.
+* `/ip`:
+  Show the client's IP as well as its location information,
+  queried from the geolocation database.
+* `/mirrors`:
+  Return a JSON object containing the information and status of all mirrors.
+* `/pkg/:abi/*path`:
+  Return the selected mirrors based on the client's location.
+  (NOTE: The `:abi/*path` part would be returned as-is.)
 
 License
 -------
