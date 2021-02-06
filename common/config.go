@@ -60,10 +60,15 @@ const (
 	MMDB_MAXMIND
 )
 
-var AppConfig *Config = &Config{}
+var AppConfig *Config
 
 
 func init() {
+	resetConfig()
+}
+
+
+func resetConfig() {
 	v := viper.New()
 	v.SetDefault("debug", false)
 	v.SetDefault("listen", "127.0.0.1:3130")
@@ -74,9 +79,10 @@ func init() {
 	v.SetDefault("monitor.user_agent", AppName+"/"+Version)
 	v.SetDefault("monitor.exec_timeout", 3)
 
+	AppConfig = &Config{}
 	err := v.Unmarshal(AppConfig)
 	if err != nil {
-		Fatalf("Failed to initialize config: %v\n", err)
+		Fatalf("Failed to reset config: %v\n", err)
 	}
 }
 
