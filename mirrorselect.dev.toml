@@ -24,6 +24,9 @@ mmdb_file = "dbip-city-lite-2021-02.mmdb"
 #
 [monitor]
 
+# Number of workers in the monitor pool (default: 10)
+workers = 5
+
 # Interval in seconds between monitor rounds
 interval = 60
 

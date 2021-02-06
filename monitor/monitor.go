@@ -12,6 +12,7 @@ import (
 	"github.com/jlaffaye/ftp"
 
 	"github.com/DragonFlyBSD/mirrorselect/common"
+	"github.com/DragonFlyBSD/mirrorselect/workerpool"
 )
 
 var appConfig = common.AppConfig
@@ -32,28 +33,47 @@ func StartMonitor() {
 // Perform one round of check of all mirrors and update their status.
 //
 func checkMirrors() {
+	var tasks []*workerpool.Task
+
 	for name, mirror := range appConfig.Mirrors {
-		u, err := url.Parse(mirror.URL)
-		if err != nil {
-			common.Fatalf("Mirror [%s] URL invalid: %v\n",
-					name, mirror.URL)
+		// NOTE: Need to make a copy of the loop variables
+		n := name
+		m := mirror
+		f := func() error {
+			checkMirror(n, m)
+			return nil
 		}
-
-		status := false
-		switch u.Scheme {
-		case "http", "https":
-			status, err = httpCheck(u)
-		case "ftp":
-			status, err = ftpCheck(u)
-		default:
-			common.Fatalf("Mirror [%s] URL unsupported: %v\n",
-					name, mirror.URL)
-		}
-		common.DebugPrintf("Mirror [%s]: %v, error: %v\n",
-				name, status, err)
-
-		updateMirror(name, mirror, status)
+		tasks = append(tasks, workerpool.NewTask(f))
 	}
+
+	pool := workerpool.NewPool(tasks, appConfig.Monitor.Workers)
+	pool.Run()
+}
+
+
+// Check the given mirror and update its status.
+//
+func checkMirror(name string, mirror *common.Mirror) {
+	u, err := url.Parse(mirror.URL)
+	if err != nil {
+		common.Fatalf("Mirror [%s] URL invalid: %v\n",
+				name, mirror.URL)
+	}
+
+	status := false
+	switch u.Scheme {
+	case "http", "https":
+		status, err = httpCheck(u)
+	case "ftp":
+		status, err = ftpCheck(u)
+	default:
+		common.Fatalf("Mirror [%s] URL unsupported: %v\n",
+				name, mirror.URL)
+	}
+	common.DebugPrintf("Mirror [%s]: %v, error: %v\n",
+			name, status, err)
+
+	updateMirror(name, mirror, status)
 }
 
 

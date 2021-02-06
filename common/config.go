@@ -34,6 +34,7 @@ type MMDBConfig struct {
 }
 
 type MonitorConfig struct {
+	Workers		int           `mapstructure:"workers"`
 	Interval	time.Duration `mapstructure:"interval"`
 	Timeout		time.Duration `mapstructure:"timeout"`
 	Hysteresis	int           `mapstructure:"hysteresis"`
@@ -72,6 +73,7 @@ func resetConfig() {
 	v := viper.New()
 	v.SetDefault("debug", false)
 	v.SetDefault("listen", "127.0.0.1:3130")
+	v.SetDefault("monitor.workers", 10)
 	v.SetDefault("monitor.interval", 3600)  // hourly
 	v.SetDefault("monitor.timeout", 5)
 	v.SetDefault("monitor.hysteresis", 3)
@@ -101,6 +103,11 @@ func ReadConfig(cfgfile string) *Config {
 	err = v.Unmarshal(AppConfig)
 	if err != nil {
 		Fatalf("Failed to unmarshal config: %v\n", err)
+	}
+
+	if AppConfig.Monitor.Workers <= 0 {
+		Fatalf("Config [monitor.workers] = %d <= 0\n",
+				AppConfig.Monitor.Workers)
 	}
 
 	if !AppConfig.Monitor.TLSVerify {
