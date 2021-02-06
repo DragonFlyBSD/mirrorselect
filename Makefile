@@ -2,7 +2,7 @@ all:
 	go build -o mirrorselect main.go
 
 test: dbip
-	go test -v ./...
+	go test -v ./common ./geoip ./monitor
 
 dbip: testdata/dbip-city-lite-2021-02.mmdb
 testdata/dbip-city-lite-2021-02.mmdb:
