@@ -1,8 +1,9 @@
 DragonFly pkg mirrorselect
 --------------------------
 
-**Mirrorselect** is an HTTP backend service that selects the pkg(8) mirrors
-according to their "distances" to the client.
+**Mirrorselect** is an HTTP backend service that selects the
+[pkg(8)](https://man.dragonflybsd.org/?command=pkg&section=8)
+mirrors according to their "distances" to the client.
 
 The "distance" of a mirror is determined by:
 
@@ -85,20 +86,55 @@ Deployment
 4. Run **mirrorselect** as a **normal** user (e.g., `nobody`).
 5. Publish this service via Nginx/Apache.
 
+### Nginx proxy example
+
+```nginx
+server {
+    listen       80 http2;
+    server_name  pkg.dragonflybsd.org;
+
+    location / {
+        proxy_http_version  1.1;
+        proxy_set_header    Host $host;
+        proxy_set_header    X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_pass          http://localhost:3130;
+    }
+}
+```
+
+### Apache proxy example
+
+```apache
+<VirtualHost *:80>
+    ServerName  pkg.dragonflybsd.org
+
+    ProxyPreserveHost On
+
+    ProxyPass         / http://localhost:3130/
+    ProxyPassReverse  / http://localhost:3130/
+</VirtualHost>
+```
+
 Services
 --------
-* `/`:
+* `/`
+  <br>
   For testing, just reply a `pong`, same as the `/ping` below.
-* `/ping`:
+* `/ping`
+  <br>
   For testing, just reply a `pong`.
-* `/ip`:
+* `/ip`
+  <br>
   Show the client's IP as well as its location information,
   queried from the geolocation database.
-* `/mirrors`:
+* `/mirrors`
+  <br>
   Return a JSON object containing the information and status of all mirrors.
-* `/pkg/:abi/*path`:
+* `/pkg/:abi/*path`
+  <br>
   Return the selected mirrors based on the client's location.
-  (NOTE: The `:abi/*path` part would be returned as-is.)
+  <br>
+  NOTE: The `:abi/*path` part would be returned as-is.
 
 License
 -------
