@@ -131,7 +131,7 @@ func ReadConfig(cfgfile string) *Config {
 		Fatalf("Failed to open MMDB: %v\n", err)
 	}
 
-	DebugPrintf("App config: %v\n", AppConfig)
+	DebugPrintf("App config: %+v\n", AppConfig)
 	return AppConfig
 }
 
@@ -172,7 +172,7 @@ func readMirrors(fname string) {
 		}
 
 		mirror.Status.Online = true
-		DebugPrintf("Mirror [%s]: %v\n", name, mirror)
+		DebugPrintf("Mirror [%s]: %+v\n", name, mirror)
 
 		if mirror.IsDefault {
 			defaults = append(defaults, name)
