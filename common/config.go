@@ -171,6 +171,11 @@ func readMirrors(fname string) {
 					name, mirror.URL)
 		}
 
+		if mirror.ContinentCode == "" || mirror.CountryCode == "" ||
+		   mirror.Latitude == 0 || mirror.Longitude == 0 {
+			Fatalf("Mirror [%s] location incomplete\n", name)
+		}
+
 		mirror.Status.Online = true
 		DebugPrintf("Mirror [%s]: %+v\n", name, mirror)
 
