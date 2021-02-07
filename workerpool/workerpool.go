@@ -3,6 +3,7 @@
 //
 // Credit:
 // https://brandur.org/go-worker-pool
+// https://hackernoon.com/concurrency-in-golang-and-workerpool-part-2-l3w31q7
 //
 
 package workerpool
@@ -17,16 +18,42 @@ import (
 type Task struct {
 	Err	error
 
-	f	func() error
+	data	interface{}
+	f	func(data interface{}) error
 }
 
-func NewTask(f func() error) *Task {
-	return &Task{ f: f }
+func NewTask(f func(data interface{}) error, data interface{}) *Task {
+	return &Task{ f: f, data: data }
 }
 
-func (t *Task) Run(wg *sync.WaitGroup) {
-	t.Err = t.f()
-	wg.Done()
+func (t *Task) Run() {
+	t.Err = t.f(t.data)
+}
+
+
+// A worker handles the received tasks.
+//
+type Worker struct {
+	ID	int
+
+	tasks	chan *Task
+}
+
+func NewWorker(id int, tasks chan *Task) *Worker {
+	return &Worker{
+		ID: id,
+		tasks: tasks,
+	}
+}
+
+func (w *Worker) Start(wg *sync.WaitGroup) {
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for task := range w.tasks {
+			task.Run()
+		}
+	}()
 }
 
 
@@ -36,7 +63,7 @@ type Pool struct {
 	Tasks		[]*Task
 
 	concurrency	int
-	taskChan	chan *Task
+	collector	chan *Task
 	wg		sync.WaitGroup
 }
 
@@ -44,7 +71,7 @@ func NewPool(tasks []*Task, concurrency int) *Pool {
 	return &Pool{
 		Tasks: tasks,
 		concurrency: concurrency,
-		taskChan: make(chan *Task),
+		collector: make(chan *Task),
 	}
 }
 
@@ -52,23 +79,15 @@ func NewPool(tasks []*Task, concurrency int) *Pool {
 //
 func (p *Pool) Run() {
 	for i := 0; i < p.concurrency; i++ {
-		go p.work()
+		worker := NewWorker(i, p.collector)
+		worker.Start(&p.wg)
 	}
 
-	p.wg.Add(len(p.Tasks))
-	for _, task := range p.Tasks {
-		p.taskChan <- task
+	for i := range p.Tasks {
+		p.collector <- p.Tasks[i]
 	}
 
-	close(p.taskChan)
+	close(p.collector)
 
 	p.wg.Wait()
-}
-
-// The work loop for any single goroutine.
-//
-func (p *Pool) work() {
-	for task := range p.taskChan {
-		task.Run(&p.wg)
-	}
 }

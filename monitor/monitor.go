@@ -39,11 +39,11 @@ func checkMirrors() {
 		// NOTE: Need to make a copy of the loop variables
 		n := name
 		m := mirror
-		f := func() error {
+		f := func(data interface{}) error {
 			checkMirror(n, m)
 			return nil
 		}
-		tasks = append(tasks, workerpool.NewTask(f))
+		tasks = append(tasks, workerpool.NewTask(f, nil))
 	}
 
 	pool := workerpool.NewPool(tasks, appConfig.Monitor.Workers)
