@@ -73,7 +73,8 @@ func GetPkgMirrors(c *gin.Context) {
 	mirrors := geoip.FindMirrors(location)
 	urls := ""
 	for _, m := range mirrors {
-		urls += fmt.Sprintf("URL: %s/%s/%s\n", m.URL, c.Param("abi"),
+		urls += fmt.Sprintf("URL: %s/%s/%s\n",
+				strings.TrimSuffix(m.URL, "/"), c.Param("abi"),
 				strings.TrimPrefix(c.Param("path"), "/"))
 	}
 	c.String(http.StatusOK, urls)
