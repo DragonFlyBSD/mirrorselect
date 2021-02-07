@@ -23,18 +23,7 @@ var appConfig = common.AppConfig
 func StartMonitor() {
 	common.InfoPrintf("Start mirror monitor.\n")
 
-	for {
-		checkMirrors()
-		time.Sleep(appConfig.Monitor.Interval * time.Second)
-	}
-}
-
-
-// Perform one round of check of all mirrors and update their status.
-//
-func checkMirrors() {
 	var tasks []*workerpool.Task
-
 	for name, mirror := range appConfig.Mirrors {
 		// NOTE: Need to make a copy of the loop variables
 		n := name
@@ -47,7 +36,16 @@ func checkMirrors() {
 	}
 
 	pool := workerpool.NewPool(tasks, appConfig.Monitor.Workers)
-	pool.Run()
+	go pool.RunBackground()
+
+	for {
+		time.Sleep(appConfig.Monitor.Interval * time.Second)
+		for i := range tasks {
+			pool.AddTask(tasks[i])
+		}
+	}
+
+	pool.Stop()
 }
 
 
