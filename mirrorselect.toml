@@ -1,0 +1,50 @@
+#
+# DragonFly pkg mirrorselect
+#
+
+# Uncomment to turn on debug
+#debug = true
+
+listen = "127.0.0.1:3130"
+
+# Uncomment to write log to a file
+#log_file = "mirrorselect.log"
+
+# File containing the mirrors (path relative to this file)
+mirror_list = "mirrors.toml"
+
+# Type of the following MaxMind database file
+# (choices: dbip, maxmind)
+mmdb_type = "dbip"
+# MaxMind database file (path relative to this file)
+mmdb_file = "/var/lib/mirrorselect/dbip.mmdb"
+
+#
+# Settings for mirror monitor
+#
+[monitor]
+
+# Number of workers in the monitor pool (default: 10)
+workers = 10
+
+# Wait interval before starting the next monitor round (unit: second)
+interval = 1800
+
+# Timeout set for requesting mirrors (unit: second)
+timeout = 5
+
+# Number of consecutive opposite status before flipping mirror's status
+hysteresis = 3
+
+# Whether to verify the server's certificate? (default: true)
+tls_verify = true
+
+# Custom User-Agent header (default: mirrorselect/<version>)
+#user_agent = "customized user-agent string ..."
+
+# Executable to invoke when a mirror is down/up
+# The command to run is: $notify_exec <mirror_name> <DOWN|UP>
+notify_exec = "echo"
+
+# Timeout for executing the above command (unit: second)
+exec_timeout = 2
