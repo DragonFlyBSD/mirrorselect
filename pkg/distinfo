@@ -1,6 +1,6 @@
-TIMESTAMP = 1612839748
-SHA256 (DragonFlyBSD-mirrorselect-0.9.0-9ff7515_GH0.tar.gz) = 0a09aa8a76607f6849d2894360b3e946606d83670e9778411ea73eb7bb6120b1
-SIZE (DragonFlyBSD-mirrorselect-0.9.0-9ff7515_GH0.tar.gz) = 29975
+TIMESTAMP = 1612841638
+SHA256 (DragonFlyBSD-mirrorselect-v0.9.0_GH0.tar.gz) = cf55425e133423c07a9caee7943068b50e079bb94ffe4845217664d05979d6d6
+SIZE (DragonFlyBSD-mirrorselect-v0.9.0_GH0.tar.gz) = 34353
 SHA256 (fsnotify-fsnotify-v1.4.7_GH0.tar.gz) = b7530d973d0ab0e58ad8ce1b9a4b963d6f57b3d72f2f9e13d49846976361b1cd
 SIZE (fsnotify-fsnotify-v1.4.7_GH0.tar.gz) = 31139
 SHA256 (gin-contrib-sse-v0.1.0_GH0.tar.gz) = e92addababc6e94d319606d45fa9ed7fe7b0e0748d8a918ae8acf5b0b87d7889
