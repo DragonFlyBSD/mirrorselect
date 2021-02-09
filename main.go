@@ -54,8 +54,10 @@ import (
 
 func main() {
 	var cfgfile string
+	var accesslog string
 	var f_version bool
 	flag.StringVar(&cfgfile, "config", common.AppName+".toml", "config file")
+	flag.StringVar(&accesslog, "access-log", "", "web access log file")
 	flag.BoolVar(&f_version, "version", false, "show version")
 	flag.Parse()
 
@@ -75,15 +77,15 @@ func main() {
 		gin.SetMode(gin.DebugMode)
 	}
 
-	if cfg.LogFile != "" {
-		f, err := os.OpenFile(cfg.LogFile,
+	if accesslog != "" {
+		f, err := os.OpenFile(accesslog,
 				os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
-			common.Fatalf("Failed to open logfile: %v\n", err)
+			common.Fatalf("Failed to open access log: %v\n", err)
 		}
 		gin.DisableConsoleColor()
 		gin.DefaultWriter = io.MultiWriter(f)
-		common.InfoPrintf("Write log to file: %s\n", cfg.LogFile)
+		common.InfoPrintf("Write access log to file: %s\n", accesslog)
 	}
 
 	router := gin.Default()

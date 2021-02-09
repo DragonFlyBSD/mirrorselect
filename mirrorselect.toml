@@ -7,9 +7,6 @@
 
 listen = "127.0.0.1:3130"
 
-# Uncomment to write log to a file
-#log_file = "mirrorselect.log"
-
 # File containing the mirrors (path relative to this file)
 mirror_list = "mirrors.toml"
 
@@ -44,7 +41,7 @@ tls_verify = true
 
 # Executable to invoke when a mirror is down/up
 # The command to run is: $notify_exec <mirror_name> <DOWN|UP>
-notify_exec = "echo"
+#notify_exec = "echo"
 
 # Timeout for executing the above command (unit: second)
 exec_timeout = 2

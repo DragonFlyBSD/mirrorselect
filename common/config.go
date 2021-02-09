@@ -47,7 +47,6 @@ type MonitorConfig struct {
 type Config struct {
 	Debug		bool   `mapstructure:"debug"`
 	Listen		string `mapstructure:"listen"`
-	LogFile		string `mapstructure:"log_file"`
 	MirrorListFile	string `mapstructure:"mirror_list"`
 	Mirrors		map[string]*Mirror
 	MMDBType	string `mapstructure:"mmdb_type"`

@@ -7,9 +7,6 @@ debug = true
 
 listen = "127.0.0.1:3130"
 
-# Uncomment to write log to a file
-#log_file = "mirrorselect.log"
-
 # File containing the mirrors (path relative to this file)
 mirror_list = "mirrors.dev.toml"
 
