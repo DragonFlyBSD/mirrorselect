@@ -1,0 +1,83 @@
+# United States, California, San Jose
+[dfly_avalon]
+name = "DragonFly/Avalon"
+#default = true
+url = "https://mirror-master.dragonflybsd.org/dports"
+continent_code = "NA"
+country_code = "US"
+latitude = 37.333333
+longitude = -121.9
+
+# Europe, France, Roubaix
+[dfly_eu1]
+name = "DragonFly/EU1"
+url = "https://mirror-eu-1.dragonflybsd.org/dports"
+continent_code = "EU"
+country_code = "FR"
+latitude = 50.6942
+longitude = 3.1746
+
+#
+# Asia
+#
+
+# China, Shanghai
+# SJTU *NIX User Group (SJTUG)
+[sjtug]
+name = "SJTUG"
+default = true
+url = "https://mirror.sjtu.edu.cn/dragonflybsd/dports"
+continent_code = "AS"
+country_code = "CN"
+latitude = 31.228611
+longitude = 121.474722
+
+# Hong Kong
+# KoDDoS HK
+[koddos_hk]
+name = "KoDDoS/HK"
+url = "https://mirror-hk.koddos.net/dragonflybsd/dports"
+continent_code = "AS"
+country_code = "HK"
+latitude = 22.250000
+longitude = 114.166700
+
+# Taiwan, Taipei
+# TaiWan Advanced Research and Education Network (TWAREN)
+[twaren]
+name = "TWAREN"
+url = "http://ftp.twaren.net/BSD/DragonFlyBSD/dports"
+continent_code = "AS"
+country_code = "TW"
+latitude = 25.0478
+longitude = 121.5319
+
+# Japan, Tokyo, Meguro
+# AllBSD.org
+[allbsd]
+name = "AllBSD"
+url = "https://pub.allbsd.org/DragonFly/dports"
+continent_code = "AS"
+country_code = "JP"
+latitude = 35.641800
+longitude = 139.702300
+
+# Japan, Ishikawa, Nomi City
+# Japan Advanced Institute of Science and Technology (JAIST)
+#[jaist]
+#name = "JAIST"
+#url = "https://ftp.jaist.ac.jp/pub/DragonFly/dports"
+#continent_code = "AS"
+#country_code = "JP"
+#latitude = 36.4469
+#longitude = 136.5541
+
+# Germany, Marburg
+# Philipps-Universität Marburg
+[marburg]
+name = "Marburg"
+url = "ftp://ftp.mathematik.uni-marburg.de/pub/mirror/dragonfly/dports"
+continent_code = "EU"
+country_code = "DE"
+latitude = 50.81
+longitude = 8.770833

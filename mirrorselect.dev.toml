@@ -24,16 +24,16 @@ mmdb_file = "dbip-city-lite-2021-02.mmdb"
 # Number of workers in the monitor pool (default: 10)
 workers = 5
 
-# Interval in seconds between monitor rounds
-interval = 60
+# Wait interval before starting the next monitor round (unit: second)
+interval = 30
 
-# Timeout set for requesting mirrors
+# Timeout set for requesting mirrors (unit: second)
 timeout = 5
 
 # Number of consecutive opposite status before flipping mirror's status
 hysteresis = 3
 
-# Whether to verify the server's certificate?
+# Whether to verify the server's certificate? (default: true)
 tls_verify = false
 
 # Custom User-Agent header (default: mirrorselect/<version>)
@@ -44,4 +44,4 @@ tls_verify = false
 notify_exec = "echo"
 
 # Timeout for executing the above command (unit: second)
-exec_timeout = 5
+exec_timeout = 2
