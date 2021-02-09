@@ -32,7 +32,7 @@ Features
   [jlaffaye/ftp](https://github.com/jlaffaye/ftp)
 * Stand-alone:
   - use offline IP geolocation database
-  - [MaxMind DB format](https://maxmind.github.io/MaxMind-DB/)
+    (open [MaxMind DB format](https://maxmind.github.io/MaxMind-DB/))
   - support both [MaxMind](https://www.maxmind.com) and
   [DB-IP](https://db-ip.com) dataset
 * Built-in mirror monitor:
@@ -109,11 +109,23 @@ server {
     ServerName  pkg.dragonflybsd.org
 
     ProxyPreserveHost On
-
     ProxyPass         / http://localhost:3130/
     ProxyPassReverse  / http://localhost:3130/
 </VirtualHost>
 ```
+
+### On DragonFly BSD
+
+1. Install the `www/mirrorselect` package:
+
+        pkg install mirrorselect
+
+2. Enable and start the `mirrorselect` service:
+
+        rcenable mirrorselect
+        rcstart mirrorselect
+
+3. Configure Nginx/Apache to export the service.
 
 Services
 --------
