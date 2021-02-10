@@ -70,6 +70,8 @@ URL: https://mirror-master.dragonflybsd.org/dports/dragonfly:5.10:x86:64/LATEST
 
 NOTE: The `${ABI}` is expanded by pkg(8) on the client side.
 
+NOTE: This feature requires pkg >= 1.15.0.
+
 Deployment
 ----------
 1. Prepare the mirror list file `mirrors.toml`, listing all available
