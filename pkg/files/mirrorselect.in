@@ -22,7 +22,7 @@
 . /etc/rc.subr
 
 name="mirrorselect"
-rcvar=`set_rcvar`
+rcvar="${name}_enable"
 
 load_rc_config ${name}
 : ${mirrorselect_enable:="NO"}
