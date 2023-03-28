@@ -1,0 +1,40 @@
+name: pull-request
+
+on:
+  pull_request:
+    types: [opened,reopened,synchronize]
+    branches: [master]
+
+jobs:
+  pr_run_dfly:
+    runs-on: macos-12
+    name: Pull requests DragonFly BSD
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build and test in DragonFly BSD
+      id: build-test-dfly
+      uses: vmactions/dragonflybsd-vm@v0
+      with:
+        mem: 4096
+        usesh: true
+        prepare: |
+          pkg install -y go curl
+
+        run: |
+          make
+          make test
+
+  pr_run_linux:
+    runs-on: [ubuntu-latest]
+    name: Pull requests Linux
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+    - name: Setup Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: 1.19
+    - name: Build mirrorselect
+      run: make
+    - name: Tests
+      run: make test
