@@ -1,6 +1,6 @@
 mirror_list = "mirrors/test.toml"
 mmdb_type = "dbip"
-mmdb_file = "dbip-city-lite-2021-02.mmdb"
+mmdb_file = "dbip-city-lite.mmdb"
 
 [monitor]
 tls_verify = false
