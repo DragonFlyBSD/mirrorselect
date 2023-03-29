@@ -14,7 +14,7 @@ mirror_list = "mirrors.dev.toml"
 # (choices: dbip, maxmind)
 mmdb_type = "dbip"
 # MaxMind database file (path relative to this file)
-mmdb_file = "dbip-city-lite-2021-02.mmdb"
+mmdb_file = "dbip-city-lite.mmdb"
 
 #
 # Settings for mirror monitor
