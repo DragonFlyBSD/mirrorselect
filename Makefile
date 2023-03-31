@@ -1,10 +1,10 @@
 all:
-	go build -o mirrorselect main.go
+	CGO_ENABLED=0 go build -o mirrorselect main.go
 
 ci: all
-	GOOS=dragonfly GOARCH=amd64 \
+	CGO_ENABLED=0 GOOS=dragonfly GOARCH=amd64 \
 		    go build -o mirrorselect main.go
-	GOOS=freebsd GOARCH=amd64 \
+	CGO_ENABLED=0 GOOS=freebsd GOARCH=amd64 \
 		    go build -o mirrorselect main.go
 
 clean:
