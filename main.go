@@ -62,7 +62,9 @@ func main() {
 	flag.Parse()
 
 	if f_version {
-		fmt.Printf("%s - %s\n", common.AppName, common.Version)
+		fmt.Printf("Version: %s\n", common.Version)
+		fmt.Printf("Commit: %s\n", common.Commit)
+		fmt.Printf("Date: %s\n", common.Date)
 		return
 	}
 
