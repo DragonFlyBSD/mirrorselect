@@ -21,7 +21,7 @@ jobs:
           pkg install -y go curl
 
         run: |
-          make
+          make ci
           make test
 
   pr_run_linux:
@@ -35,6 +35,6 @@ jobs:
       with:
         go-version: 1.19
     - name: Build mirrorselect
-      run: make
+      run: make ci
     - name: Tests
       run: make test

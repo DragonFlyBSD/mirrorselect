@@ -1,12 +1,17 @@
 all:
-	GOOS=dragonfly GOARCH=amd64 go build -o mirrorselect main.go
-	GOOS=freebsd GOARCH=amd64 go build -o mirrorselect main.go
+	go build -o mirrorselect main.go
 
-test: dbip
-	go test -v ./common ./geoip ./monitor ./workerpool
+ci: all
+	GOOS=dragonfly GOARCH=amd64 \
+		    go build -o mirrorselect main.go
+	GOOS=freebsd GOARCH=amd64 \
+		    go build -o mirrorselect main.go
 
 clean:
 	rm -f mirrorselect
+
+test: dbip
+	go test -v ./common ./geoip ./monitor ./workerpool
 
 dbip: testdata/dbip-city-lite.mmdb
 testdata/dbip-city-lite.mmdb:

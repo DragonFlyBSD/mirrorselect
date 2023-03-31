@@ -20,7 +20,7 @@ jobs:
           pkg install -y go curl
 
         run: |
-          make
+          make ci
           make test
 
   release:
