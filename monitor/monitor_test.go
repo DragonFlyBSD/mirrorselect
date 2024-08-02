@@ -65,8 +65,8 @@ func TestHttpCheck(t *testing.T) {
 
 func TestFtpCheck(t *testing.T) {
 	var ok_urls = []string{
-		"ftp://ftp.sjtu.edu.cn/",
-		"ftp://ftp.sjtu.edu.cn/pub/software/",
+		"ftp://ftp.freebsd.org/",
+		"ftp://ftp.freebsd.org/pub/FreeBSD/",
 	}
 	for _, utext := range ok_urls {
 		u, _ := url.Parse(utext)
