@@ -15,24 +15,23 @@ var (
 )
 
 func init() {
-	flag := log.Ldate|log.Ltime
+	flag := log.Ldate | log.Ltime
 	outLogger = log.New(os.Stdout, "", flag)
 	errLogger = log.New(os.Stderr, "", flag)
 }
 
 // Get the file and function information of the logger caller.
-// Result: "filename:line:function"
+// Result: "file:line:function"
 func getOrigin() string {
 	// calldepth is 2: caller -> xxxPrintf() -> getOrigin()
 	pc, file, line, ok := runtime.Caller(2)
 	if !ok {
-		return "???:0:???"
+		return "???:?:???"
 	}
 
-	filename := file[strings.LastIndex(file, "/")+1:]
 	funcname := runtime.FuncForPC(pc).Name()
 	fn := funcname[strings.LastIndex(funcname, ".")+1:]
-	return filename + ":" + strconv.Itoa(line) + ":" + fn
+	return file + ":" + strconv.Itoa(line) + ":" + fn
 }
 
 func DebugPrintf(format string, v ...interface{}) {
