@@ -6,7 +6,7 @@ on:
 
 jobs:
   build_dfly:
-    runs-on: macos-12
+    runs-on: ubuntu-latest
     name: Release build and tests on dfly
     steps:
     - uses: actions/checkout@v3
