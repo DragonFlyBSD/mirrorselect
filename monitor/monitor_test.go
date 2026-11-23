@@ -7,7 +7,6 @@ import (
 	"github.com/DragonFlyBSD/mirrorselect/common"
 )
 
-
 func TestHttpCheck(t *testing.T) {
 	var ok_urls = []string{
 		"http://www.sjtu.edu.cn/",
@@ -21,7 +20,7 @@ func TestHttpCheck(t *testing.T) {
 		status, err := httpCheck(u)
 		if err != nil || !status {
 			t.Errorf("httpCheck(%q) = (%v, %v); want %v\n",
-					u, status, err, true)
+				u, status, err, true)
 		}
 	}
 
@@ -31,7 +30,7 @@ func TestHttpCheck(t *testing.T) {
 		status, err := httpCheck(u)
 		if err != nil || !status {
 			t.Errorf("httpCheck(%q) = (%v, %v); want %v\n",
-					u, status, err, true)
+				u, status, err, true)
 		}
 	}
 
@@ -44,7 +43,7 @@ func TestHttpCheck(t *testing.T) {
 		status, err := httpCheck(u)
 		if err == nil || status {
 			t.Errorf("httpCheck(%q) = (%v, %v); want %v\n",
-					u, status, err, false)
+				u, status, err, false)
 		}
 	}
 
@@ -57,11 +56,10 @@ func TestHttpCheck(t *testing.T) {
 		status, err := httpCheck(u)
 		if err == nil || status {
 			t.Errorf("httpCheck(%q) = (%v, %v); want %v\n",
-					u, status, err, false)
+				u, status, err, false)
 		}
 	}
 }
-
 
 func TestFtpCheck(t *testing.T) {
 	var ok_urls = []string{
@@ -73,7 +71,7 @@ func TestFtpCheck(t *testing.T) {
 		status, err := ftpCheck(u)
 		if err != nil || !status {
 			t.Errorf("ftpCheck(%q) = (%v, %v); want %v\n",
-					u, status, err, true)
+				u, status, err, true)
 		}
 	}
 
@@ -86,7 +84,7 @@ func TestFtpCheck(t *testing.T) {
 		status, err := ftpCheck(u)
 		if err == nil || status {
 			t.Errorf("ftpCheck(%q) = (%v, %v); want %v\n",
-					u, status, err, false)
+				u, status, err, false)
 		}
 	}
 
@@ -99,18 +97,17 @@ func TestFtpCheck(t *testing.T) {
 		status, err := ftpCheck(u)
 		if err == nil || status {
 			t.Errorf("ftpCheck(%q) = (%v, %v); want %v\n",
-					u, status, err, false)
+				u, status, err, false)
 		}
 	}
 }
-
 
 func TestHysteresis(t *testing.T) {
 	appConfig.Monitor.Hysteresis = 2
 	mirror := &common.Mirror{
 		Name: "Test",
 		Status: common.MirrorStatus{
-			Online: true,
+			Online:     true,
 			Hysteresis: 0,
 		},
 	}
@@ -118,11 +115,11 @@ func TestHysteresis(t *testing.T) {
 	assertStatus := func(hysteresis int, online bool) {
 		if mirror.Status.Hysteresis != hysteresis {
 			t.Errorf("updateMirror() failed: hysteresis = %d; want %d\n",
-					mirror.Status.Hysteresis, hysteresis)
+				mirror.Status.Hysteresis, hysteresis)
 		}
 		if mirror.Status.Online != online {
 			t.Errorf("updateMirror() failed: online = %v; want %v\n",
-					mirror.Status.Online, online)
+				mirror.Status.Online, online)
 		}
 	}
 

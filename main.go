@@ -81,7 +81,7 @@ func main() {
 
 	if accesslog != "" {
 		f, err := os.OpenFile(accesslog,
-				os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+			os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			common.Fatalf("Failed to open access log: %v\n", err)
 		}

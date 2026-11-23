@@ -7,7 +7,6 @@ import (
 	"time"
 )
 
-
 // Credit: https://brandur.org/go-worker-pool
 func TestWorkerPool1(t *testing.T) {
 	tasks := []*Task{
@@ -25,7 +24,6 @@ func TestWorkerPool1(t *testing.T) {
 		}
 	}
 }
-
 
 // https://hackernoon.com/concurrency-in-golang-and-workerpool-part-2-l3w31q7
 func TestWorkerPool2(t *testing.T) {
@@ -60,7 +58,7 @@ func TestWorkerPool3(t *testing.T) {
 		for {
 			taskID := rand.Intn(100) + 20
 
-			if taskID % 7 == 0 {
+			if taskID%7 == 0 {
 				pool.Stop()
 			}
 

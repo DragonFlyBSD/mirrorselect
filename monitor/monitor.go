@@ -17,9 +17,7 @@ import (
 
 var appConfig = common.AppConfig
 
-
 // Start a monitor that periodically check the status of all mirrors.
-//
 func StartMonitor() {
 	common.InfoPrintf("Start mirror monitor.\n")
 
@@ -48,14 +46,12 @@ func StartMonitor() {
 	pool.Stop()
 }
 
-
 // Check the given mirror and update its status.
-//
 func checkMirror(name string, mirror *common.Mirror) {
 	u, err := url.Parse(mirror.URL)
 	if err != nil {
 		common.Fatalf("Mirror [%s] URL invalid: %v\n",
-				name, mirror.URL)
+			name, mirror.URL)
 	}
 
 	status := false
@@ -66,17 +62,15 @@ func checkMirror(name string, mirror *common.Mirror) {
 		status, err = ftpCheck(u)
 	default:
 		common.Fatalf("Mirror [%s] URL unsupported: %v\n",
-				name, mirror.URL)
+			name, mirror.URL)
 	}
 	common.DebugPrintf("Mirror [%s]: %v, error: %v\n",
-			name, status, err)
+		name, status, err)
 
 	updateMirror(name, mirror, status)
 }
 
-
 // Update the status of a mirror accodring to the check result.
-//
 func updateMirror(name string, mirror *common.Mirror, status bool) {
 	if status {
 		mirror.Status.OKCount++
@@ -87,7 +81,7 @@ func updateMirror(name string, mirror *common.Mirror, status bool) {
 	if mirror.Status.Online != status {
 		mirror.Status.Hysteresis++
 		common.DebugPrintf("Mirror [%s] hysteresis = %d\n",
-				name, mirror.Status.Hysteresis)
+			name, mirror.Status.Hysteresis)
 		if mirror.Status.Hysteresis >= appConfig.Monitor.Hysteresis {
 			mirror.Status.Hysteresis = 0
 			mirror.Status.Online = status
@@ -101,13 +95,11 @@ func updateMirror(name string, mirror *common.Mirror, status bool) {
 	} else {
 		mirror.Status.Hysteresis = 0
 		common.DebugPrintf("Mirror [%s] hysteresis = %d\n",
-				name, mirror.Status.Hysteresis)
+			name, mirror.Status.Hysteresis)
 	}
 }
 
-
 // Check the given HTTP/HTTPS URL to determine whether it's accessible.
-//
 func httpCheck(u *url.URL) (bool, error) {
 	if u.Scheme != "http" && u.Scheme != "https" {
 		return false, fmt.Errorf("Invalid HTTP(s) URL: %v", u.String())
@@ -117,10 +109,10 @@ func httpCheck(u *url.URL) (bool, error) {
 	tr := http.DefaultTransport.(*http.Transport).Clone()
 	tr.TLSClientConfig = &tls.Config{
 		InsecureSkipVerify: !appConfig.Monitor.TLSVerify,
-		ServerName: u.Hostname(),
+		ServerName:         u.Hostname(),
 	}
 	client := &http.Client{
-		Timeout: timeout,
+		Timeout:   timeout,
 		Transport: tr,
 	}
 
@@ -141,15 +133,13 @@ func httpCheck(u *url.URL) (bool, error) {
 
 	if resp.StatusCode != http.StatusOK {
 		return false, fmt.Errorf("Status code (%d) != OK",
-				resp.StatusCode)
+			resp.StatusCode)
 	}
 
 	return true, nil
 }
 
-
 // Check the given FTP URL to determine whether it's accessible.
-//
 func ftpCheck(u *url.URL) (bool, error) {
 	if u.Scheme != "ftp" {
 		return false, fmt.Errorf("Invalid FTP URL: %v", u.String())
@@ -183,10 +173,8 @@ func ftpCheck(u *url.URL) (bool, error) {
 	return true, nil
 }
 
-
 // Publish the mirror event by invoking the configured notification
 // executable.
-//
 func notifyExec(name string, status bool) {
 	if appConfig.Monitor.NotifyExec == "" {
 		return

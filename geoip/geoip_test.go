@@ -8,15 +8,13 @@ import (
 	"github.com/DragonFlyBSD/mirrorselect/common"
 )
 
-
 func init() {
 	fname := "../testdata/mirrorselect.toml"
 	common.ReadConfig(fname)
 }
 
-
 func TestLookupIP1(t *testing.T) {
-	unknown_ips := []string{ "127.0.0.1", "::1" }
+	unknown_ips := []string{"127.0.0.1", "::1"}
 
 	for _, ipstr := range unknown_ips {
 		ip := net.ParseIP(ipstr)
@@ -27,38 +25,37 @@ func TestLookupIP1(t *testing.T) {
 	}
 }
 
-
 func TestLookupIP2(t *testing.T) {
 	cases := []struct {
-		ip string
+		ip       string
 		location *Location
 	}{
 		{
-			ip: "199.233.90.68",  // leaf.dragonflybsd.org
+			ip: "199.233.90.68", // leaf.dragonflybsd.org
 			location: &Location{
 				ContinentCode: "NA",
-				CountryCode: "US",
+				CountryCode:   "US",
 			},
 		},
 		{
-			ip: "2001:470:1:43b:1::68",  // leaf.dragonflybsd.org
+			ip: "2001:470:1:43b:1::68", // leaf.dragonflybsd.org
 			location: &Location{
 				ContinentCode: "NA",
-				CountryCode: "US",
+				CountryCode:   "US",
 			},
 		},
 		{
-			ip: "202.120.2.119",  // www.sjtu.edu.cn
+			ip: "202.120.2.119", // www.sjtu.edu.cn
 			location: &Location{
 				ContinentCode: "AS",
-				CountryCode: "CN",
+				CountryCode:   "CN",
 			},
 		},
 		{
-			ip: "2001:da8:8000:1::2:119",  // www.sjtu.edu.cn
+			ip: "2001:da8:8000:1::2:119", // www.sjtu.edu.cn
 			location: &Location{
 				ContinentCode: "AS",
-				CountryCode: "CN",
+				CountryCode:   "CN",
 			},
 		},
 	}
@@ -70,49 +67,48 @@ func TestLookupIP2(t *testing.T) {
 			t.Errorf("LookupIP(%v) = %v, want %v", ip, loc, tc.location)
 		}
 		if loc.ContinentCode != tc.location.ContinentCode ||
-		   loc.CountryCode != tc.location.CountryCode {
+			loc.CountryCode != tc.location.CountryCode {
 			t.Errorf("LookupIP(%v) = %v, want %v", ip, loc, tc.location)
 		}
 	}
 }
 
-
 func TestFindMirrors(t *testing.T) {
 	cases := []struct {
-		location *Location
+		location     *Location
 		mirror_count int
-		mirror_first string  // name of mirror
-		mirror_last string
+		mirror_first string // name of mirror
+		mirror_last  string
 	}{
 		{
-			location: nil,
+			location:     nil,
 			mirror_count: 1,
 			mirror_first: "SJTUG",
-			mirror_last: "SJTUG",
+			mirror_last:  "SJTUG",
 		},
 		{
 			// leaf.dragonflybsd.org (199.233.90.68)
 			location: &Location{
 				ContinentCode: "NA",
-				CountryCode: "US",
-				Latitude: 37.8817,
-				Longitude: -122.188,
+				CountryCode:   "US",
+				Latitude:      37.8817,
+				Longitude:     -122.188,
 			},
 			mirror_count: 2,
 			mirror_first: "DragonFly/Avalon",
-			mirror_last: "SJTUG",
+			mirror_last:  "SJTUG",
 		},
 		{
 			// www.sjtu.edu.cn (202.120.2.119)
 			location: &Location{
 				ContinentCode: "AS",
-				CountryCode: "CN",
-				Latitude: 31.201,
-				Longitude: 121.433,
+				CountryCode:   "CN",
+				Latitude:      31.201,
+				Longitude:     121.433,
 			},
 			mirror_count: 2,
 			mirror_first: "SJTUG",
-			mirror_last: "SJTUG",
+			mirror_last:  "SJTUG",
 		},
 	}
 
@@ -120,57 +116,56 @@ func TestFindMirrors(t *testing.T) {
 		mirrors := FindMirrors(tc.location)
 		if len(mirrors) != tc.mirror_count {
 			t.Errorf("FindMirrors(%v) failed: got %d mirrors, want %d",
-					tc.location, len(mirrors), tc.mirror_count)
+				tc.location, len(mirrors), tc.mirror_count)
 		}
 		m_first := mirrors[0]
 		if m_first.Name != tc.mirror_first {
 			t.Errorf("FindMirrors(%v) failed: got [%s], want [%s]",
-					tc.location, m_first.Name, tc.mirror_first)
+				tc.location, m_first.Name, tc.mirror_first)
 		}
 		m_last := mirrors[len(mirrors)-1]
 		if m_last.Name != tc.mirror_last {
 			t.Errorf("FindMirrors(%v) failed: got [%s], want [%s]",
-					tc.location, m_last.Name, tc.mirror_last)
+				tc.location, m_last.Name, tc.mirror_last)
 		}
 	}
 }
 
-
 func TestGreatCircleDistance(t *testing.T) {
 	eps := 1e-6
 	cases := []struct {
-		p1 Point
-		p2 Point
+		p1       Point
+		p2       Point
 		want_min float64
 		want_max float64
 	}{
 		{
-			p1: Point{ 0, 0 },
-			p2: Point{ 0, 0 },
+			p1:       Point{0, 0},
+			p2:       Point{0, 0},
 			want_min: -eps,
 			want_max: eps,
 		},
 		{
-			p1: Point{ 0, 0 },
-			p2: Point{ 90, 0 },
+			p1:       Point{0, 0},
+			p2:       Point{90, 0},
 			want_min: 90 - eps,
 			want_max: 90 + eps,
 		},
 		{
-			p1: Point{ 0, 0 },
-			p2: Point{ 180, 0 },
+			p1:       Point{0, 0},
+			p2:       Point{180, 0},
 			want_min: 180 - eps,
 			want_max: 180 + eps,
 		},
 		{
-			p1: Point{ 0, 0 },
-			p2: Point{ 0, 90 },
+			p1:       Point{0, 0},
+			p2:       Point{0, 90},
 			want_min: 90 - eps,
 			want_max: 90 + eps,
 		},
 		{
-			p1: Point{ 0, -90 },
-			p2: Point{ 0, 90 },
+			p1:       Point{0, -90},
+			p2:       Point{0, 90},
 			want_min: 180 - eps,
 			want_max: 180 + eps,
 		},
@@ -181,7 +176,7 @@ func TestGreatCircleDistance(t *testing.T) {
 		deg := rad * 180 / math.Pi
 		if deg < tc.want_min || deg > tc.want_max {
 			t.Errorf("greatCircleDistance(%v, %v) = %v; want: [%v, %v]",
-					tc.p1, tc.p2, deg, tc.want_min, tc.want_max)
+				tc.p1, tc.p2, deg, tc.want_min, tc.want_max)
 		}
 	}
 }

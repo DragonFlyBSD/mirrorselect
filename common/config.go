@@ -3,56 +3,56 @@ package common
 import (
 	"net/url"
 	"path/filepath"
-	"time"
 	"strings"
+	"time"
 
 	"github.com/oschwald/maxminddb-golang"
 	"github.com/spf13/viper"
 )
 
 type MirrorStatus struct {
-	Online		bool    `json:"online"`
-	OKCount		int     `json:"ok_count"`
-	ErrorCount	int     `json:"error_count"`
-	Hysteresis	int     `json:"hysteresis"`
+	Online     bool `json:"online"`
+	OKCount    int  `json:"ok_count"`
+	ErrorCount int  `json:"error_count"`
+	Hysteresis int  `json:"hysteresis"`
 }
 
 type Mirror struct {
-	Name		string  `mapstructure:"name" json:"name"`
-	IsDefault	bool    `mapstructure:"default" json:"default"`
-	URL		string  `mapstructure:"url" json:"url"`
-	ContinentCode	string  `mapstructure:"continent_code" json:"continent_code"`
-	CountryCode	string  `mapstructure:"country_code" json:"country_code"`
-	Latitude	float64 `mapstructure:"latitude" json:"latitude"`
-	Longitude	float64 `mapstructure:"longitude" json:"longitude"`
-	Status		MirrorStatus `json:"status"`
+	Name          string       `mapstructure:"name" json:"name"`
+	IsDefault     bool         `mapstructure:"default" json:"default"`
+	URL           string       `mapstructure:"url" json:"url"`
+	ContinentCode string       `mapstructure:"continent_code" json:"continent_code"`
+	CountryCode   string       `mapstructure:"country_code" json:"country_code"`
+	Latitude      float64      `mapstructure:"latitude" json:"latitude"`
+	Longitude     float64      `mapstructure:"longitude" json:"longitude"`
+	Status        MirrorStatus `json:"status"`
 }
 
 type MMDBConfig struct {
-	Type		int
-	DB		*maxminddb.Reader
+	Type int
+	DB   *maxminddb.Reader
 }
 
 type MonitorConfig struct {
-	Workers		int           `mapstructure:"workers"`
-	Interval	time.Duration `mapstructure:"interval"`
-	Timeout		time.Duration `mapstructure:"timeout"`
-	Hysteresis	int           `mapstructure:"hysteresis"`
-	TLSVerify	bool          `mapstructure:"tls_verify"`
-	UserAgent	string        `mapstructure:"user_agent"`
-	NotifyExec	string        `mapstructure:"notify_exec"`
-	ExecTimeout	time.Duration `mapstructure:"exec_timeout"`
+	Workers     int           `mapstructure:"workers"`
+	Interval    time.Duration `mapstructure:"interval"`
+	Timeout     time.Duration `mapstructure:"timeout"`
+	Hysteresis  int           `mapstructure:"hysteresis"`
+	TLSVerify   bool          `mapstructure:"tls_verify"`
+	UserAgent   string        `mapstructure:"user_agent"`
+	NotifyExec  string        `mapstructure:"notify_exec"`
+	ExecTimeout time.Duration `mapstructure:"exec_timeout"`
 }
 
 type Config struct {
-	Debug		bool   `mapstructure:"debug"`
-	Listen		string `mapstructure:"listen"`
-	MirrorListFile	string `mapstructure:"mirror_list"`
-	Mirrors		map[string]*Mirror
-	MMDBType	string `mapstructure:"mmdb_type"`
-	MMDBFile	string `mapstructure:"mmdb_file"`
-	MMDB		MMDBConfig
-	Monitor		MonitorConfig
+	Debug          bool   `mapstructure:"debug"`
+	Listen         string `mapstructure:"listen"`
+	MirrorListFile string `mapstructure:"mirror_list"`
+	Mirrors        map[string]*Mirror
+	MMDBType       string `mapstructure:"mmdb_type"`
+	MMDBFile       string `mapstructure:"mmdb_file"`
+	MMDB           MMDBConfig
+	Monitor        MonitorConfig
 }
 
 const (
@@ -62,18 +62,16 @@ const (
 
 var AppConfig *Config
 
-
 func init() {
 	resetConfig()
 }
-
 
 func resetConfig() {
 	v := viper.New()
 	v.SetDefault("debug", false)
 	v.SetDefault("listen", "127.0.0.1:3130")
 	v.SetDefault("monitor.workers", 10)
-	v.SetDefault("monitor.interval", 3600)  // hourly
+	v.SetDefault("monitor.interval", 3600) // hourly
 	v.SetDefault("monitor.timeout", 5)
 	v.SetDefault("monitor.hysteresis", 3)
 	v.SetDefault("monitor.tls_verify", true)
@@ -87,9 +85,7 @@ func resetConfig() {
 	}
 }
 
-
 // Read main configurations from file.
-//
 func ReadConfig(cfgfile string) *Config {
 	v := viper.New()
 	v.SetConfigFile(cfgfile)
@@ -106,7 +102,7 @@ func ReadConfig(cfgfile string) *Config {
 
 	if AppConfig.Monitor.Workers <= 0 {
 		Fatalf("Config [monitor.workers] = %d <= 0\n",
-				AppConfig.Monitor.Workers)
+			AppConfig.Monitor.Workers)
 	}
 
 	if !AppConfig.Monitor.TLSVerify {
@@ -148,7 +144,6 @@ func ReadConfig(cfgfile string) *Config {
 }
 
 // Read config file of mirrors.
-//
 func readMirrors(fname string) {
 	v := viper.New()
 	v.SetConfigFile(fname)
@@ -173,18 +168,18 @@ func readMirrors(fname string) {
 		u, err := url.Parse(mirror.URL)
 		if err != nil {
 			Fatalf("Mirror [%s] URL invalid: %v\n",
-					name, mirror.URL)
+				name, mirror.URL)
 		}
 		switch u.Scheme {
 		case "http", "https", "ftp":
 			break
 		default:
 			Fatalf("Mirror [%s] URL unsupported: %v\n",
-					name, mirror.URL)
+				name, mirror.URL)
 		}
 
 		if mirror.ContinentCode == "" || mirror.CountryCode == "" ||
-		   mirror.Latitude == 0 || mirror.Longitude == 0 {
+			mirror.Latitude == 0 || mirror.Longitude == 0 {
 			Fatalf("Mirror [%s] location incomplete\n", name)
 		}
 
