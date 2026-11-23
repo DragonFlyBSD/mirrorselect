@@ -1,7 +1,7 @@
 //
-// DragonFly pkg mirrorselect
+// DragonFly BSD pkg(8) mirrorselect
 //
-
+// SPDX-License-Identifier: BSD-3-Clause
 //
 // Copyright (c) 2021 The DragonFly Project.
 //
