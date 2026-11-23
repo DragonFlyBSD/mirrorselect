@@ -89,6 +89,16 @@ country_code = "CN"
 latitude = 31.228611
 longitude = 121.474722
 
+# China, Nanjing
+# eScience Center, Nanjing University
+[nju]
+name = "NJU"
+url = "https://mirror.nju.edu.cn/dragonflybsd/dports"
+continent_code = "AS"
+country_code = "CN"
+latitude = 32.0606
+longitude = 118.7789
+
 # Hong Kong
 # KoDDoS HK
 [koddos_hk]
