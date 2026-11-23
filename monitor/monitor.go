@@ -41,7 +41,7 @@ func StartMonitor() {
 	go pool.RunBackground()
 
 	for {
-		time.Sleep(appConfig.Monitor.Interval * time.Second)
+		time.Sleep(time.Duration(appConfig.Monitor.Interval) * time.Second)
 		for i := range tasks {
 			pool.AddTask(tasks[i])
 		}
@@ -109,7 +109,7 @@ func httpCheck(u *url.URL) (bool, error) {
 		return false, fmt.Errorf("Invalid HTTP(s) URL: %v", u.String())
 	}
 
-	timeout := appConfig.Monitor.Timeout * time.Second
+	timeout := time.Duration(appConfig.Monitor.Timeout) * time.Second
 	tr := http.DefaultTransport.(*http.Transport).Clone()
 	tr.TLSClientConfig = &tls.Config{
 		InsecureSkipVerify: !appConfig.Monitor.TLSVerify,
@@ -154,7 +154,7 @@ func ftpCheck(u *url.URL) (bool, error) {
 		addr += ":21"
 	}
 
-	timeout := appConfig.Monitor.Timeout * time.Second
+	timeout := time.Duration(appConfig.Monitor.Timeout) * time.Second
 	conn, err := ftp.Dial(addr, ftp.DialWithTimeout(timeout))
 	if err != nil {
 		return false, err
@@ -189,7 +189,7 @@ func notifyExec(name string, status bool) {
 		event = "UP"
 	}
 
-	timeout := appConfig.Monitor.ExecTimeout * time.Second
+	timeout := time.Duration(appConfig.Monitor.ExecTimeout) * time.Second
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 

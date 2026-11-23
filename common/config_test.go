@@ -27,12 +27,3 @@ func TestReadConfig(t *testing.T) {
 		}
 	}
 }
-
-func TestResetConfig(t *testing.T) {
-	AppConfig.Monitor.TLSVerify = false
-	resetConfig()
-	if AppConfig.Monitor.TLSVerify != true {
-		t.Errorf("resetConfig() failed: TLSVerify = %v, want true\n",
-			AppConfig.Monitor.TLSVerify)
-	}
-}

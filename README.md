@@ -28,7 +28,7 @@ Features
   - few direct dependencies:
   [gin-gonic/gin](https://github.com/gin-gonic/gin),
   [oschwald/maxminddb-golang](https://github.com/oschwald/maxminddb-golang),
-  [spf13/viper](https://github.com/spf13/viper),
+  [BurntSushi/toml](https://github.com/BurntSushi/toml),
   [jlaffaye/ftp](https://github.com/jlaffaye/ftp)
 * Stand-alone:
   - use offline IP geolocation database
