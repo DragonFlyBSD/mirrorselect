@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: BSD-3-Clause
+//
+// Copyright (c) 2021 The DragonFly Project.
 //
 // A simple worker pool that runs tasks.
 //
@@ -12,39 +15,35 @@ import (
 	"sync"
 )
 
-
 // Encapsulate a task in a work pool.
-//
 type Task struct {
-	Err	error
+	Err error
 
-	data	interface{}
-	f	func(data interface{}) error
+	data interface{}
+	f    func(data interface{}) error
 }
 
 func NewTask(f func(data interface{}) error, data interface{}) *Task {
-	return &Task{ f: f, data: data }
+	return &Task{f: f, data: data}
 }
 
 func (t *Task) Run() {
 	t.Err = t.f(t.data)
 }
 
-
 // A worker handles the received tasks.
-//
 type Worker struct {
-	ID	int
+	ID int
 
-	tasks	chan *Task
-	quit	chan bool
+	tasks chan *Task
+	quit  chan bool
 }
 
 func NewWorker(id int, tasks chan *Task) *Worker {
 	return &Worker{
-		ID: id,
+		ID:    id,
 		tasks: tasks,
-		quit: make(chan bool),
+		quit:  make(chan bool),
 	}
 }
 
@@ -78,24 +77,22 @@ func (w *Worker) Stop() {
 	}()
 }
 
-
 // A worker group that runs tasks at a configured concurrency.
-//
 type Pool struct {
-	Tasks		[]*Task
-	Workers		[]*Worker
+	Tasks   []*Task
+	Workers []*Worker
 
-	concurrency	int
-	collector	chan *Task
-	quit		chan bool
-	wg		sync.WaitGroup
+	concurrency int
+	collector   chan *Task
+	quit        chan bool
+	wg          sync.WaitGroup
 }
 
 func NewPool(tasks []*Task, concurrency int) *Pool {
 	return &Pool{
-		Tasks: tasks,
+		Tasks:       tasks,
 		concurrency: concurrency,
-		collector: make(chan *Task),
+		collector:   make(chan *Task),
 	}
 }
 

@@ -1,58 +1,61 @@
+// SPDX-License-Identifier: BSD-3-Clause
+//
+// Copyright (c) 2021-2026 The DragonFly Project.
+
 package common
 
 import (
 	"net/url"
 	"path/filepath"
-	"time"
 	"strings"
 
+	"github.com/BurntSushi/toml"
 	"github.com/oschwald/maxminddb-golang"
-	"github.com/spf13/viper"
 )
 
 type MirrorStatus struct {
-	Online		bool    `json:"online"`
-	OKCount		int     `json:"ok_count"`
-	ErrorCount	int     `json:"error_count"`
-	Hysteresis	int     `json:"hysteresis"`
+	Online     bool `json:"online"`
+	OKCount    int  `json:"ok_count"`
+	ErrorCount int  `json:"error_count"`
+	Hysteresis int  `json:"hysteresis"`
 }
 
 type Mirror struct {
-	Name		string  `mapstructure:"name" json:"name"`
-	IsDefault	bool    `mapstructure:"default" json:"default"`
-	URL		string  `mapstructure:"url" json:"url"`
-	ContinentCode	string  `mapstructure:"continent_code" json:"continent_code"`
-	CountryCode	string  `mapstructure:"country_code" json:"country_code"`
-	Latitude	float64 `mapstructure:"latitude" json:"latitude"`
-	Longitude	float64 `mapstructure:"longitude" json:"longitude"`
-	Status		MirrorStatus `json:"status"`
+	Name          string       `toml:"name" json:"name"`
+	IsDefault     bool         `toml:"default" json:"default"`
+	URL           string       `toml:"url" json:"url"`
+	ContinentCode string       `toml:"continent_code" json:"continent_code"`
+	CountryCode   string       `toml:"country_code" json:"country_code"`
+	Latitude      float64      `toml:"latitude" json:"latitude"`
+	Longitude     float64      `toml:"longitude" json:"longitude"`
+	Status        MirrorStatus `json:"status"`
 }
 
 type MMDBConfig struct {
-	Type		int
-	DB		*maxminddb.Reader
+	Type int
+	DB   *maxminddb.Reader
 }
 
 type MonitorConfig struct {
-	Workers		int           `mapstructure:"workers"`
-	Interval	time.Duration `mapstructure:"interval"`
-	Timeout		time.Duration `mapstructure:"timeout"`
-	Hysteresis	int           `mapstructure:"hysteresis"`
-	TLSVerify	bool          `mapstructure:"tls_verify"`
-	UserAgent	string        `mapstructure:"user_agent"`
-	NotifyExec	string        `mapstructure:"notify_exec"`
-	ExecTimeout	time.Duration `mapstructure:"exec_timeout"`
+	Workers     int    `toml:"workers"`
+	Interval    int    `toml:"interval"` // seconds
+	Timeout     int    `toml:"timeout"`  // seconds
+	Hysteresis  int    `toml:"hysteresis"`
+	TLSVerify   bool   `toml:"tls_verify"`
+	UserAgent   string `toml:"user_agent"`
+	NotifyExec  string `toml:"notify_exec"`
+	ExecTimeout int    `toml:"exec_timeout"` // seconds
 }
 
 type Config struct {
-	Debug		bool   `mapstructure:"debug"`
-	Listen		string `mapstructure:"listen"`
-	MirrorListFile	string `mapstructure:"mirror_list"`
-	Mirrors		map[string]*Mirror
-	MMDBType	string `mapstructure:"mmdb_type"`
-	MMDBFile	string `mapstructure:"mmdb_file"`
-	MMDB		MMDBConfig
-	Monitor		MonitorConfig
+	Debug          bool   `toml:"debug"`
+	Listen         string `toml:"listen"`
+	MirrorListFile string `toml:"mirror_list"`
+	Mirrors        map[string]*Mirror
+	MMDBType       string `toml:"mmdb_type"`
+	MMDBFile       string `toml:"mmdb_file"`
+	MMDB           MMDBConfig
+	Monitor        MonitorConfig
 }
 
 const (
@@ -60,53 +63,30 @@ const (
 	MMDB_MAXMIND
 )
 
-var AppConfig *Config
-
-
-func init() {
-	resetConfig()
+var AppConfig = &Config{
+	Listen: "127.0.0.1:3130",
+	Monitor: MonitorConfig{
+		Workers:     10,
+		Interval:    3600, // hourly
+		Timeout:     5,
+		Hysteresis:  3,
+		TLSVerify:   true,
+		UserAgent:   AppName + "/" + Version,
+		ExecTimeout: 3,
+	},
 }
-
-
-func resetConfig() {
-	v := viper.New()
-	v.SetDefault("debug", false)
-	v.SetDefault("listen", "127.0.0.1:3130")
-	v.SetDefault("monitor.workers", 10)
-	v.SetDefault("monitor.interval", 3600)  // hourly
-	v.SetDefault("monitor.timeout", 5)
-	v.SetDefault("monitor.hysteresis", 3)
-	v.SetDefault("monitor.tls_verify", true)
-	v.SetDefault("monitor.user_agent", AppName+"/"+Version)
-	v.SetDefault("monitor.exec_timeout", 3)
-
-	AppConfig = &Config{}
-	err := v.Unmarshal(AppConfig)
-	if err != nil {
-		Fatalf("Failed to reset config: %v\n", err)
-	}
-}
-
 
 // Read main configurations from file.
-//
 func ReadConfig(cfgfile string) *Config {
-	v := viper.New()
-	v.SetConfigFile(cfgfile)
-	err := v.ReadInConfig()
+	_, err := toml.DecodeFile(cfgfile, &AppConfig)
 	if err != nil {
-		Fatalf("Failed to read config: %v\n", err)
+		Fatalf("Failed to read config file `%s`: %v\n", cfgfile, err)
 	}
-	InfoPrintf("Read in config file.\n")
-
-	err = v.Unmarshal(AppConfig)
-	if err != nil {
-		Fatalf("Failed to unmarshal config: %v\n", err)
-	}
+	InfoPrintf("Read in config file: %s\n", cfgfile)
 
 	if AppConfig.Monitor.Workers <= 0 {
 		Fatalf("Config [monitor.workers] = %d <= 0\n",
-				AppConfig.Monitor.Workers)
+			AppConfig.Monitor.Workers)
 	}
 
 	if !AppConfig.Monitor.TLSVerify {
@@ -148,20 +128,11 @@ func ReadConfig(cfgfile string) *Config {
 }
 
 // Read config file of mirrors.
-//
 func readMirrors(fname string) {
-	v := viper.New()
-	v.SetConfigFile(fname)
-	err := v.ReadInConfig()
-	if err != nil {
-		Fatalf("Failed to read mirrors: %v\n", err)
+	if _, err := toml.DecodeFile(fname, &AppConfig.Mirrors); err != nil {
+		Fatalf("Failed to read mirrors file `%s`: %v\n", fname, err)
 	}
-	InfoPrintf("Read in mirrors list.\n")
-
-	err = v.Unmarshal(&AppConfig.Mirrors)
-	if err != nil {
-		Fatalf("Failed to unmarshal mirrors: %v\n", err)
-	}
+	InfoPrintf("Read mirrors list from file: %s\n", fname)
 
 	var defaults []string
 	for name, mirror := range AppConfig.Mirrors {
@@ -173,18 +144,18 @@ func readMirrors(fname string) {
 		u, err := url.Parse(mirror.URL)
 		if err != nil {
 			Fatalf("Mirror [%s] URL invalid: %v\n",
-					name, mirror.URL)
+				name, mirror.URL)
 		}
 		switch u.Scheme {
 		case "http", "https", "ftp":
 			break
 		default:
 			Fatalf("Mirror [%s] URL unsupported: %v\n",
-					name, mirror.URL)
+				name, mirror.URL)
 		}
 
 		if mirror.ContinentCode == "" || mirror.CountryCode == "" ||
-		   mirror.Latitude == 0 || mirror.Longitude == 0 {
+			mirror.Latitude == 0 || mirror.Longitude == 0 {
 			Fatalf("Mirror [%s] location incomplete\n", name)
 		}
 

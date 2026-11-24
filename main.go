@@ -1,7 +1,7 @@
 //
-// DragonFly pkg mirrorselect
+// DragonFly BSD pkg(8) mirrorselect
 //
-
+// SPDX-License-Identifier: BSD-3-Clause
 //
 // Copyright (c) 2021 The DragonFly Project.
 //
@@ -81,7 +81,7 @@ func main() {
 
 	if accesslog != "" {
 		f, err := os.OpenFile(accesslog,
-				os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+			os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			common.Fatalf("Failed to open access log: %v\n", err)
 		}
