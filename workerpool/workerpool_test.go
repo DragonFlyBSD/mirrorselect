@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: BSD-3-Clause
 //
-// Copyright (c) 2021 The DragonFly Project.
+// Copyright (c) 2021-2026 The DragonFly Project.
 
 package workerpool
 
 import (
-	"fmt"
-	"math/rand"
+	"sync"
 	"testing"
 	"time"
 )
@@ -34,9 +33,7 @@ func TestWorkerPool2(t *testing.T) {
 	var allTask []*Task
 	for i := 0; i < 100; i++ {
 		task := NewTask(func(data interface{}) error {
-			taskID := data.(int)
-			time.Sleep(100 * time.Millisecond)
-			fmt.Printf("Task %d processed\n", taskID)
+			time.Sleep(time.Millisecond)
 			return nil
 		}, i)
 		allTask = append(allTask, task)
@@ -53,33 +50,39 @@ func TestWorkerPool2(t *testing.T) {
 }
 
 func TestWorkerPool3(t *testing.T) {
-	rand.Seed(time.Now().UnixNano())
+	const taskCount = 20
 
-	var allTask []*Task
-	pool := NewPool(allTask, 5)
-
+	tasks := make([]*Task, 0, taskCount)
+	pool := NewPool(nil, 5)
+	done := make(chan struct{})
 	go func() {
-		for {
-			taskID := rand.Intn(100) + 20
-
-			if taskID%7 == 0 {
-				pool.Stop()
-			}
-
-			time.Sleep(time.Duration(rand.Intn(5)) * time.Second)
-			task := NewTask(func(data interface{}) error {
-				taskID := data.(int)
-				time.Sleep(100 * time.Millisecond)
-				fmt.Printf("Task %d processed\n", taskID)
-				return nil
-			}, taskID)
-			pool.AddTask(task)
-		}
+		pool.RunBackground()
+		close(done)
 	}()
 
-	pool.RunBackground()
+	var wg sync.WaitGroup
+	for i := 0; i < taskCount; i++ {
+		task := NewTask(func(data interface{}) error {
+			defer wg.Done()
+			time.Sleep(time.Millisecond)
+			return nil
+		}, i)
+		tasks = append(tasks, task)
+		pool.AddTask(task)
+		wg.Add(1)
+	}
 
-	for _, task := range pool.Tasks {
+	wg.Wait()
+	pool.Stop()
+	pool.Stop() // Stopping the pool must be idempotent.
+
+	select {
+	case <-done:
+	case <-time.After(time.Second):
+		t.Fatal("RunBackground did not stop")
+	}
+
+	for _, task := range tasks {
 		if task.Err != nil {
 			t.Error(task.Err)
 		}
