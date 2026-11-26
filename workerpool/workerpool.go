@@ -19,11 +19,11 @@ import (
 type Task struct {
 	Err error
 
-	data interface{}
-	f    func(data interface{}) error
+	f    func(data any) error
+	data any
 }
 
-func NewTask(f func(data interface{}) error, data interface{}) *Task {
+func NewTask(f func(data any) error, data any) *Task {
 	return &Task{f: f, data: data}
 }
 

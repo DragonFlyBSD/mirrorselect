@@ -23,7 +23,7 @@ func TestWorkerPool1(t *testing.T) {
 
 	var wg sync.WaitGroup
 	for i := 0; i < taskCount; i++ {
-		task := NewTask(func(data interface{}) error {
+		task := NewTask(func(_ any) error {
 			defer wg.Done()
 			time.Sleep(time.Millisecond)
 			return nil
@@ -52,7 +52,7 @@ func TestWorkerPool1(t *testing.T) {
 	// Adding a task after stopping must not block.
 	added := make(chan struct{})
 	go func() {
-		pool.AddTask(NewTask(func(data interface{}) error { return nil }, nil))
+		pool.AddTask(NewTask(func(_ any) error { return nil }, nil))
 		close(added)
 	}()
 

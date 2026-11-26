@@ -26,12 +26,12 @@ var appConfig = common.AppConfig
 func StartMonitor(ctx context.Context) {
 	common.InfoPrintf("Start mirror monitor.\n")
 
-	var tasks []*workerpool.Task
+	tasks := make([]*workerpool.Task, 0, len(appConfig.Mirrors))
 	for name, mirror := range appConfig.Mirrors {
 		// NOTE: Need to make a copy of the loop variables
 		n := name
 		m := mirror
-		f := func(data interface{}) error {
+		f := func(_ any) error {
 			checkMirror(n, m)
 			return nil
 		}

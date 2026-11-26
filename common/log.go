@@ -38,7 +38,7 @@ func getOrigin() string {
 	return file + ":" + strconv.Itoa(line) + ":" + fn
 }
 
-func DebugPrintf(format string, v ...interface{}) {
+func DebugPrintf(format string, v ...any) {
 	if !AppConfig.Debug {
 		return
 	}
@@ -47,22 +47,22 @@ func DebugPrintf(format string, v ...interface{}) {
 	errLogger.Printf(format, v...)
 }
 
-func InfoPrintf(format string, v ...interface{}) {
+func InfoPrintf(format string, v ...any) {
 	format = fmt.Sprintf("[INFO] %s: %s", getOrigin(), format)
 	outLogger.Printf(format, v...)
 }
 
-func WarnPrintf(format string, v ...interface{}) {
+func WarnPrintf(format string, v ...any) {
 	format = fmt.Sprintf("[WARNING] %s: %s", getOrigin(), format)
 	errLogger.Printf(format, v...)
 }
 
-func ErrorPrintf(format string, v ...interface{}) {
+func ErrorPrintf(format string, v ...any) {
 	format = fmt.Sprintf("[ERROR] %s: %s", getOrigin(), format)
 	errLogger.Printf(format, v...)
 }
 
-func Fatalf(format string, v ...interface{}) {
+func Fatalf(format string, v ...any) {
 	format = fmt.Sprintf("[FATAL] %s: %s", getOrigin(), format)
 	errLogger.Fatalf(format, v...)
 }
