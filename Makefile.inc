@@ -4,6 +4,8 @@ MODULE=		github.com/DragonFlyBSD/$(PROG)
 BUILD_ARGS+=	-trimpath -ldflags "$(LDFLAGS)"
 
 all:
+	go mod tidy
+	go vet ./...
 	env CGO_ENABLED=0 \
 		go build $(BUILD_ARGS) -o $(PROG)
 
@@ -17,7 +19,8 @@ clean:
 	rm -f $(PROG) $(PROG)-*-*
 
 test: dbip
-	go test -v ./common ./geoip ./monitor ./workerpool
+	go test -v ./...
+	go test -race ./...
 
 dbip: testdata/dbip-city-lite.mmdb
 testdata/dbip-city-lite.mmdb:
