@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 //
-// Copyright (c) 2021 The DragonFly Project.
+// Copyright (c) 2021-2026 The DragonFly Project.
 //
 // A simple worker pool that runs tasks.
 //
@@ -35,34 +35,31 @@ func (t *Task) Run() {
 type Worker struct {
 	ID int
 
-	tasks chan *Task
-	quit  chan bool
+	tasks    chan *Task
+	quit     chan struct{}
+	stopOnce sync.Once
+	wg       sync.WaitGroup
 }
 
 func NewWorker(id int, tasks chan *Task) *Worker {
 	return &Worker{
 		ID:    id,
 		tasks: tasks,
-		quit:  make(chan bool),
+		quit:  make(chan struct{}),
 	}
 }
 
-// Start the worker and do the tasks.
-func (w *Worker) Start(wg *sync.WaitGroup) {
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for task := range w.tasks {
-			task.Run()
-		}
-	}()
-}
+// Run the worker, process the existing tasks and wait for new tasks.
+func (w *Worker) Run() {
+	w.wg.Add(1)
+	defer w.wg.Done()
 
-// Start the worker in background, waiting for tasks.
-func (w *Worker) StartBackground() {
 	for {
 		select {
-		case task := <-w.tasks:
+		case task, ok := <-w.tasks:
+			if !ok {
+				return
+			}
 			task.Run()
 		case <-w.quit:
 			return
@@ -70,73 +67,73 @@ func (w *Worker) StartBackground() {
 	}
 }
 
-// Stop the background worker.
+// Stop the worker.
 func (w *Worker) Stop() {
-	go func() {
-		w.quit <- true
-	}()
+	w.stopOnce.Do(func() {
+		close(w.quit)
+	})
+	w.wg.Wait()
 }
 
 // A worker group that runs tasks at a configured concurrency.
 type Pool struct {
-	Tasks   []*Task
-	Workers []*Worker
-
-	concurrency int
-	collector   chan *Task
-	quit        chan bool
-	wg          sync.WaitGroup
+	tasks     []*Task
+	workers   []*Worker
+	collector chan *Task
+	quit      chan struct{}
+	stopOnce  sync.Once
+	wg        sync.WaitGroup
 }
 
 func NewPool(tasks []*Task, concurrency int) *Pool {
+	collector := make(chan *Task)
+	workers := make([]*Worker, concurrency)
+	for i := range concurrency {
+		workers[i] = NewWorker(i, collector)
+	}
+
 	return &Pool{
-		Tasks:       tasks,
-		concurrency: concurrency,
-		collector:   make(chan *Task),
+		tasks:     tasks,
+		workers:   workers,
+		collector: collector,
+		quit:      make(chan struct{}),
 	}
 }
 
-// Run all tasks in the pool and blocks until it's finished.
+// Add a task to the pool.
+func (p *Pool) AddTask(task *Task) bool {
+	select {
+	case p.collector <- task:
+		return true
+	case <-p.quit: // don't block after stop
+	}
+	return false
+}
+
+// Run the worker pool to process tasks.
 func (p *Pool) Run() {
-	for i := 0; i < p.concurrency; i++ {
-		worker := NewWorker(i, p.collector)
-		worker.Start(&p.wg)
+	for _, worker := range p.workers {
+		p.wg.Add(1)
+		go func(w *Worker) {
+			defer p.wg.Done()
+			w.Run()
+		}(worker)
 	}
 
-	for i := range p.Tasks {
-		p.collector <- p.Tasks[i]
+	for _, t := range p.tasks {
+		p.AddTask(t)
 	}
-
-	close(p.collector)
 
 	p.wg.Wait()
 }
 
-// Add a task to the pool.
-func (p *Pool) AddTask(task *Task) {
-	p.collector <- task
-}
-
-// Run the workers in background.
-func (p *Pool) RunBackground() {
-	for i := 0; i < p.concurrency; i++ {
-		worker := NewWorker(i, p.collector)
-		p.Workers = append(p.Workers, worker)
-		go worker.StartBackground()
-	}
-
-	for i := range p.Tasks {
-		p.collector <- p.Tasks[i]
-	}
-
-	p.quit = make(chan bool)
-	<-p.quit
-}
-
-// Stop the background workers.
+// Stop all workers.
 func (p *Pool) Stop() {
-	for i := range p.Workers {
-		p.Workers[i].Stop()
-	}
-	p.quit <- true
+	p.stopOnce.Do(func() {
+		close(p.quit)
+		for _, worker := range p.workers {
+			worker.Stop()
+		}
+	})
+	p.wg.Wait()
 }

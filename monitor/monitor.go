@@ -38,7 +38,7 @@ func StartMonitor() {
 	}
 
 	pool := workerpool.NewPool(tasks, appConfig.Monitor.Workers)
-	go pool.RunBackground()
+	go pool.Run()
 
 	for {
 		time.Sleep(time.Duration(appConfig.Monitor.Interval) * time.Second)
