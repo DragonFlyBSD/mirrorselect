@@ -7,7 +7,9 @@ package monitor
 import (
 	"context"
 	"crypto/tls"
+	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"net/url"
 	"os/exec"
@@ -31,8 +33,8 @@ func StartMonitor(ctx context.Context) {
 		// NOTE: Need to make a copy of the loop variables
 		n := name
 		m := mirror
-		f := func(_ any) error {
-			checkMirror(n, m)
+		f := func(ctx context.Context, _ any) error {
+			checkMirror(ctx, n, m)
 			return nil
 		}
 		tasks = append(tasks, workerpool.NewTask(f, nil))
@@ -41,7 +43,7 @@ func StartMonitor(ctx context.Context) {
 	pool := workerpool.NewPool(tasks, appConfig.Monitor.Workers)
 	poolDone := make(chan struct{})
 	go func() {
-		pool.Run()
+		pool.Run(ctx)
 		close(poolDone)
 	}()
 
@@ -60,14 +62,16 @@ func StartMonitor(ctx context.Context) {
 			return
 		case <-ticker.C:
 			for i := range tasks {
-				pool.AddTask(tasks[i])
+				if !pool.AddTask(ctx, tasks[i]) {
+					break
+				}
 			}
 		}
 	}
 }
 
 // Check the given mirror and update its status.
-func checkMirror(name string, mirror *common.Mirror) {
+func checkMirror(ctx context.Context, name string, mirror *common.Mirror) {
 	u, err := url.Parse(mirror.URL)
 	if err != nil {
 		common.Fatalf("Mirror [%s] URL invalid: %v\n",
@@ -77,9 +81,9 @@ func checkMirror(name string, mirror *common.Mirror) {
 	status := false
 	switch u.Scheme {
 	case "http", "https":
-		status, err = httpCheck(u)
+		status, err = httpCheck(ctx, u)
 	case "ftp":
-		status, err = ftpCheck(u)
+		status, err = ftpCheck(ctx, u)
 	default:
 		common.Fatalf("Mirror [%s] URL unsupported: %v\n",
 			name, mirror.URL)
@@ -87,11 +91,15 @@ func checkMirror(name string, mirror *common.Mirror) {
 	common.DebugPrintf("Mirror [%s]: %v, error: %v\n",
 		name, status, err)
 
-	updateMirror(name, mirror, status)
+	// Don't update the status if the check was interrupted by shutdown.
+	if ctx.Err() != nil {
+		return
+	}
+	updateMirror(ctx, name, mirror, status)
 }
 
 // Update the status of a mirror accodring to the check result.
-func updateMirror(name string, mirror *common.Mirror, status bool) {
+func updateMirror(ctx context.Context, name string, mirror *common.Mirror, status bool) {
 	if status {
 		mirror.Status.OKCount++
 	} else {
@@ -110,7 +118,7 @@ func updateMirror(name string, mirror *common.Mirror, status bool) {
 			} else {
 				common.WarnPrintf("Mirror [%s] went DOWN!\n", name)
 			}
-			go notifyExec(name, status)
+			go notifyExec(ctx, name, status)
 		}
 	} else {
 		mirror.Status.Hysteresis = 0
@@ -120,7 +128,7 @@ func updateMirror(name string, mirror *common.Mirror, status bool) {
 }
 
 // Check the given HTTP/HTTPS URL to determine whether it's accessible.
-func httpCheck(u *url.URL) (bool, error) {
+func httpCheck(ctx context.Context, u *url.URL) (bool, error) {
 	if u.Scheme != "http" && u.Scheme != "https" {
 		return false, fmt.Errorf("Invalid HTTP(s) URL: %v", u.String())
 	}
@@ -136,7 +144,7 @@ func httpCheck(u *url.URL) (bool, error) {
 		Transport: tr,
 	}
 
-	req, err := http.NewRequest("GET", u.String(), nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", u.String(), nil)
 	if err != nil {
 		return false, err
 	}
@@ -159,8 +167,21 @@ func httpCheck(u *url.URL) (bool, error) {
 	return true, nil
 }
 
+// cancelConn closes the connection when the context is canceled.
+// The FTP library only uses the context for dialing, so closing the
+// connection is needed to interrupt pending reads from an unresponsive server.
+type cancelConn struct {
+	net.Conn
+	stop func() bool
+}
+
+func (c *cancelConn) Close() error {
+	c.stop()
+	return c.Conn.Close()
+}
+
 // Check the given FTP URL to determine whether it's accessible.
-func ftpCheck(u *url.URL) (bool, error) {
+func ftpCheck(ctx context.Context, u *url.URL) (bool, error) {
 	if u.Scheme != "ftp" {
 		return false, fmt.Errorf("Invalid FTP URL: %v", u.String())
 	}
@@ -171,7 +192,18 @@ func ftpCheck(u *url.URL) (bool, error) {
 	}
 
 	timeout := time.Duration(appConfig.Monitor.Timeout) * time.Second
-	conn, err := ftp.Dial(addr, ftp.DialWithTimeout(timeout))
+	dialer := net.Dialer{Timeout: timeout}
+	dialFunc := func(network, address string) (net.Conn, error) {
+		conn, err := dialer.DialContext(ctx, network, address)
+		if err != nil {
+			return nil, err
+		}
+		return &cancelConn{
+			Conn: conn,
+			stop: context.AfterFunc(ctx, func() { conn.Close() }),
+		}, nil
+	}
+	conn, err := ftp.Dial(addr, ftp.DialWithDialFunc(dialFunc))
 	if err != nil {
 		return false, err
 	}
@@ -195,7 +227,7 @@ func ftpCheck(u *url.URL) (bool, error) {
 
 // Publish the mirror event by invoking the configured notification
 // executable.
-func notifyExec(name string, status bool) {
+func notifyExec(ctx context.Context, name string, status bool) {
 	if appConfig.Monitor.NotifyExec == "" {
 		return
 	}
@@ -206,7 +238,7 @@ func notifyExec(name string, status bool) {
 	}
 
 	timeout := time.Duration(appConfig.Monitor.ExecTimeout) * time.Second
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	cmd := exec.CommandContext(ctx, appConfig.Monitor.NotifyExec, name, event)
@@ -215,8 +247,10 @@ func notifyExec(name string, status bool) {
 	if output != nil && len(output) > 0 {
 		common.InfoPrintf("Command output: %s", output)
 	}
-	if ctx.Err() != nil {
+	if errors.Is(ctx.Err(), context.DeadlineExceeded) {
 		common.ErrorPrintf("Command (%s) timed out!\n", cmd.String())
+	} else if errors.Is(ctx.Err(), context.Canceled) {
+		common.DebugPrintf("Command (%s) canceled.\n", cmd.String())
 	} else if err != nil {
 		common.ErrorPrintf("Command (%s) failed: %v\n", cmd.String(), err)
 	}

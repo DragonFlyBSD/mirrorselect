@@ -12,6 +12,7 @@
 package workerpool
 
 import (
+	"context"
 	"sync"
 )
 
@@ -19,40 +20,46 @@ import (
 type Task struct {
 	Err error
 
-	f    func(data any) error
+	f    func(ctx context.Context, data any) error
 	data any
 }
 
-func NewTask(f func(data any) error, data any) *Task {
+func NewTask(f func(ctx context.Context, data any) error, data any) *Task {
 	return &Task{f: f, data: data}
 }
 
-func (t *Task) Run() {
-	t.Err = t.f(t.data)
+func (t *Task) Run(ctx context.Context) {
+	t.Err = t.f(ctx, t.data)
 }
 
 // A worker handles the received tasks.
 type Worker struct {
 	ID int
 
-	tasks    chan *Task
-	quit     chan struct{}
-	stopOnce sync.Once
-	wg       sync.WaitGroup
+	tasks     chan *Task
+	quit      chan struct{}
+	started   chan struct{}
+	done      chan struct{}
+	startOnce sync.Once
+	stopOnce  sync.Once
 }
 
 func NewWorker(id int, tasks chan *Task) *Worker {
 	return &Worker{
-		ID:    id,
-		tasks: tasks,
-		quit:  make(chan struct{}),
+		ID:      id,
+		tasks:   tasks,
+		quit:    make(chan struct{}),
+		started: make(chan struct{}),
+		done:    make(chan struct{}),
 	}
 }
 
 // Run the worker, process the existing tasks and wait for new tasks.
-func (w *Worker) Run() {
-	w.wg.Add(1)
-	defer w.wg.Done()
+func (w *Worker) Run(ctx context.Context) {
+	w.startOnce.Do(func() {
+		close(w.started)
+	})
+	defer close(w.done)
 
 	for {
 		select {
@@ -60,8 +67,10 @@ func (w *Worker) Run() {
 			if !ok {
 				return
 			}
-			task.Run()
+			task.Run(ctx)
 		case <-w.quit:
+			return
+		case <-ctx.Done():
 			return
 		}
 	}
@@ -72,7 +81,11 @@ func (w *Worker) Stop() {
 	w.stopOnce.Do(func() {
 		close(w.quit)
 	})
-	w.wg.Wait()
+	select {
+	case <-w.started:
+		<-w.done
+	default:
+	}
 }
 
 // A worker group that runs tasks at a configured concurrency.
@@ -101,27 +114,39 @@ func NewPool(tasks []*Task, concurrency int) *Pool {
 }
 
 // Add a task to the pool.
-func (p *Pool) AddTask(task *Task) bool {
+// It returns false if the context is canceled or the pool is stopped.
+func (p *Pool) AddTask(ctx context.Context, task *Task) bool {
+	select {
+	case <-ctx.Done():
+		return false
+	case <-p.quit: // don't block after stop
+		return false
+	default:
+	}
+
 	select {
 	case p.collector <- task:
 		return true
+	case <-ctx.Done():
 	case <-p.quit: // don't block after stop
 	}
 	return false
 }
 
 // Run the worker pool to process tasks.
-func (p *Pool) Run() {
+func (p *Pool) Run(ctx context.Context) {
 	for _, worker := range p.workers {
 		p.wg.Add(1)
 		go func(w *Worker) {
 			defer p.wg.Done()
-			w.Run()
+			w.Run(ctx)
 		}(worker)
 	}
 
 	for _, t := range p.tasks {
-		p.AddTask(t)
+		if !p.AddTask(ctx, t) {
+			break
+		}
 	}
 
 	p.wg.Wait()
