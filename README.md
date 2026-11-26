@@ -154,4 +154,4 @@ License
 -------
 The 3-Clause BSD License
 
-Copyright (c) 2021 The DragonFly Project.
+Copyright (c) 2021-2026 The DragonFly Project.
