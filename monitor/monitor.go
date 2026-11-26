@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 //
-// Copyright (c) 2021 The DragonFly Project.
+// Copyright (c) 2021-2026 The DragonFly Project.
 
 package monitor
 
@@ -22,7 +22,8 @@ import (
 var appConfig = common.AppConfig
 
 // Start a monitor that periodically check the status of all mirrors.
-func StartMonitor() {
+// It runs until the context is canceled, then stops the worker pool.
+func StartMonitor(ctx context.Context) {
 	common.InfoPrintf("Start mirror monitor.\n")
 
 	var tasks []*workerpool.Task
@@ -38,16 +39,31 @@ func StartMonitor() {
 	}
 
 	pool := workerpool.NewPool(tasks, appConfig.Monitor.Workers)
-	go pool.Run()
+	poolDone := make(chan struct{})
+	go func() {
+		pool.Run()
+		close(poolDone)
+	}()
+
+	defer func() {
+		pool.Stop()
+		<-poolDone
+	}()
+
+	ticker := time.NewTicker(time.Duration(appConfig.Monitor.Interval) * time.Second)
+	defer ticker.Stop()
 
 	for {
-		time.Sleep(time.Duration(appConfig.Monitor.Interval) * time.Second)
-		for i := range tasks {
-			pool.AddTask(tasks[i])
+		select {
+		case <-ctx.Done():
+			common.InfoPrintf("Stop mirror monitor.\n")
+			return
+		case <-ticker.C:
+			for i := range tasks {
+				pool.AddTask(tasks[i])
+			}
 		}
 	}
-
-	pool.Stop()
 }
 
 // Check the given mirror and update its status.

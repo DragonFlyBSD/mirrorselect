@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: BSD-3-Clause
 //
-// Copyright (c) 2021 The DragonFly Project.
+// Copyright (c) 2021-2026 The DragonFly Project.
 //
 // This code is derived from software contributed to The DragonFly Project
 // by Aaron LI <aly@aaronly.me>.
@@ -39,11 +39,17 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
+	"os/signal"
 	"os/user"
+	"syscall"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -98,8 +104,37 @@ func main() {
 	router.GET("/ip", api.GetIP)
 	router.GET("/ping", api.GetPing)
 
-	go monitor.StartMonitor()
+	ctx, stop := signal.NotifyContext(context.Background(),
+		syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
 
-	common.InfoPrintf("Listen on: [%s]\n", cfg.Listen)
-	router.Run(cfg.Listen)
+	monitorDone := make(chan struct{})
+	go func() {
+		monitor.StartMonitor(ctx)
+		close(monitorDone)
+	}()
+
+	srv := &http.Server{
+		Addr:    cfg.Listen,
+		Handler: router,
+	}
+	go func() {
+		common.InfoPrintf("Listen on: [%s]\n", cfg.Listen)
+		err := srv.ListenAndServe()
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			common.Fatalf("Failed to start server: %v\n", err)
+		}
+	}()
+
+	<-ctx.Done()
+	common.InfoPrintf("Received shutdown signal, shutting down.\n")
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		common.ErrorPrintf("Failed to shut down server: %v\n", err)
+	}
+
+	<-monitorDone
+	common.InfoPrintf("Shutdown complete.\n")
 }
