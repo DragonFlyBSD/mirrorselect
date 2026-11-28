@@ -80,29 +80,32 @@ func main() {
 
 	cfg := common.ReadConfig(cfgfile)
 
-	gin.SetMode(gin.ReleaseMode)
-	if cfg.Debug {
-		gin.SetMode(gin.DebugMode)
+	if !cfg.Debug {
+		gin.SetMode(gin.ReleaseMode)
 	}
-
 	if accesslog != "" {
 		f, err := os.OpenFile(accesslog,
 			os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
-			common.Fatalf("Failed to open access log: %v\n", err)
+			common.Fatalf("Failed to open access log `%s`, error: %v\n", accesslog, err)
 		}
 		gin.DisableConsoleColor()
 		gin.DefaultWriter = io.MultiWriter(f)
 		common.InfoPrintf("Write access log to file: %s\n", accesslog)
 	}
 
-	router := gin.Default()
-	router.GET("/", api.GetPing)
-	router.GET("/pkg/:abi/*path", api.GetPkgMirrors)
-	router.GET("/mirror", api.GetMirrors)
-	router.GET("/mirrors", api.GetMirrors)
-	router.GET("/ip", api.GetIP)
-	router.GET("/ping", api.GetPing)
+	engine := gin.New()
+	engine.Use(gin.Logger())
+	if !cfg.Debug {
+		engine.Use(gin.Recovery())
+	}
+
+	engine.GET("/", api.GetPing)
+	engine.GET("/pkg/:abi/*path", api.GetPkgMirrors)
+	engine.GET("/mirror", api.GetMirrors)
+	engine.GET("/mirrors", api.GetMirrors)
+	engine.GET("/ip", api.GetIP)
+	engine.GET("/ping", api.GetPing)
 
 	ctx, stop := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM)
@@ -116,7 +119,7 @@ func main() {
 
 	srv := &http.Server{
 		Addr:    cfg.Listen,
-		Handler: router,
+		Handler: engine,
 	}
 	go func() {
 		common.InfoPrintf("Listen on: [%s]\n", cfg.Listen)
