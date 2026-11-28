@@ -59,15 +59,12 @@ import (
 )
 
 func main() {
-	var cfgfile string
-	var accesslog string
-	var f_version bool
-	flag.StringVar(&cfgfile, "config", common.AppName+".toml", "config file")
-	flag.StringVar(&accesslog, "access-log", "", "web access log file")
-	flag.BoolVar(&f_version, "version", false, "show version")
+	configFile := flag.String("config", common.AppName+".toml", "config file")
+	accessLog := flag.String("access-log", "", "web access log file")
+	showVersion := flag.Bool("version", false, "show version")
 	flag.Parse()
 
-	if f_version {
+	if *showVersion {
 		fmt.Printf("Version: %s\n", common.Version)
 		fmt.Printf("Commit: %s\n", common.Commit)
 		fmt.Printf("Date: %s\n", common.Date)
@@ -78,20 +75,20 @@ func main() {
 		common.WarnPrintf("Running as root (uid=0) is discouraged!!!")
 	}
 
-	cfg := common.ReadConfig(cfgfile)
+	cfg := common.ReadConfig(*configFile)
 
 	if !cfg.Debug {
 		gin.SetMode(gin.ReleaseMode)
 	}
-	if accesslog != "" {
-		f, err := os.OpenFile(accesslog,
+	if *accessLog != "" {
+		f, err := os.OpenFile(*accessLog,
 			os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
-			common.Fatalf("Failed to open access log `%s`, error: %v\n", accesslog, err)
+			common.Fatalf("Failed to open access log `%s`, error: %v\n", *accessLog, err)
 		}
 		gin.DisableConsoleColor()
 		gin.DefaultWriter = io.MultiWriter(f)
-		common.InfoPrintf("Write access log to file: %s\n", accesslog)
+		common.InfoPrintf("Write access log to file: %s\n", *accessLog)
 	}
 
 	engine := gin.New()
