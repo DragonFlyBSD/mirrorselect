@@ -115,7 +115,10 @@ func updateMirror(ctx context.Context, name string, mirror *common.Mirror, onlin
 			} else {
 				logger.Warn("mirror changed", "name", name, "status", "DOWN!")
 			}
-			go notifyExec(ctx, name, online)
+			// Snapshot the configuration before spawning the
+			// goroutine, so it doesn't access the package globals
+			// to avoid data race.
+			go notifyExec(ctx, appConfig.Monitor, name, online)
 		}
 	} else {
 		mirror.Status.Hysteresis = 0
@@ -213,9 +216,10 @@ func ftpCheck(ctx context.Context, u *url.URL) (bool, error) {
 }
 
 // Publish the mirror event by invoking the configured notification
-// executable.
-func notifyExec(ctx context.Context, name string, online bool) {
-	if appConfig.Monitor.NotifyExec == "" {
+// executable. The config and logger are passed explicitly because this
+// function runs in its own goroutine.
+func notifyExec(ctx context.Context, cfg common.MonitorConfig, name string, online bool) {
+	if cfg.NotifyExec == "" {
 		return
 	}
 
@@ -224,11 +228,11 @@ func notifyExec(ctx context.Context, name string, online bool) {
 		event = "UP"
 	}
 
-	timeout := time.Duration(appConfig.Monitor.ExecTimeout) * time.Second
+	timeout := time.Duration(cfg.ExecTimeout) * time.Second
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	cmd := exec.CommandContext(ctx, appConfig.Monitor.NotifyExec, name, event)
+	cmd := exec.CommandContext(ctx, cfg.NotifyExec, name, event)
 	logger.Debug("executing notify", "command", cmd.String())
 	output, err := cmd.CombinedOutput()
 	if output != nil && len(output) > 0 {

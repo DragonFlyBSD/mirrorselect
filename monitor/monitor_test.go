@@ -524,7 +524,7 @@ func TestNotifyExecContextCancel(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	done := make(chan struct{})
 	go func() {
-		notifyExec(ctx, "test", true)
+		notifyExec(ctx, appConfig.Monitor, "test", true)
 		close(done)
 	}()
 
