@@ -48,9 +48,10 @@ type MonitorConfig struct {
 }
 
 type Config struct {
-	Debug          bool   `toml:"debug"`
-	Listen         string `toml:"listen"`
-	MirrorListFile string `toml:"mirror_list"`
+	Debug          bool     `toml:"debug"`
+	Listen         string   `toml:"listen"`
+	TrustedProxies []string `toml:"trusted_proxies"`
+	MirrorListFile string   `toml:"mirror_list"`
 	Mirrors        map[string]*Mirror
 	MMDBType       string `toml:"mmdb_type"`
 	MMDBFile       string `toml:"mmdb_file"`

@@ -2,10 +2,16 @@
 # DragonFly pkg mirrorselect
 #
 
-# Uncomment to turn on debug
+# Uncomment to turn on debug logging and mode.
 debug = true
 
+#listen = "[::1]:3130"
 listen = "127.0.0.1:3130"
+
+# List of network origins (IPs/CIDRs) from which to trust the request's
+# headers that contain alternative client IP.
+# NOTE: must be configured in *production* environment!
+trusted_proxies = ["127.0.0.0/8", "::1/128"]
 
 # File containing the mirrors (path relative to this file)
 mirror_list = "mirrors.dev.toml"

@@ -98,7 +98,16 @@ func main() {
 	engine.Use(gin.Logger())
 	if !cfg.Debug {
 		engine.Use(gin.Recovery())
+		if len(cfg.TrustedProxies) == 0 {
+			common.Fatalf("Config `trusted_proxies` required for production mode!\n")
+		}
 	}
+
+	if err := engine.SetTrustedProxies(cfg.TrustedProxies); err != nil {
+		common.Fatalf("Failed to set trusted proxies (%v), error: %v\n", cfg.TrustedProxies, err)
+	}
+	common.InfoPrintf("Trusted proxies: %v\n", cfg.TrustedProxies)
+	common.InfoPrintf("Remote IP headers: %v\n", engine.RemoteIPHeaders)
 
 	engine.GET("/", api.GetPing)
 	engine.GET("/pkg/:abi/*path", api.GetPkgMirrors)
