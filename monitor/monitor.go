@@ -9,6 +9,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net"
 	"net/http"
 	"net/url"
@@ -22,11 +23,12 @@ import (
 )
 
 var appConfig = common.AppConfig
+var logger = slog.Default()
 
 // Start a monitor that periodically check the status of all mirrors.
 // It runs until the context is canceled, then stops the worker pool.
-func StartMonitor(ctx context.Context) {
-	common.InfoPrintf("Start mirror monitor.\n")
+func StartMonitor(ctx context.Context, base *slog.Logger) {
+	logger = base.With("component", "monitor")
 
 	tasks := make([]*workerpool.Task, 0, len(appConfig.Mirrors))
 	for name, mirror := range appConfig.Mirrors {
@@ -55,10 +57,11 @@ func StartMonitor(ctx context.Context) {
 	ticker := time.NewTicker(time.Duration(appConfig.Monitor.Interval) * time.Second)
 	defer ticker.Stop()
 
+	logger.Info("started mirror monitor")
 	for {
 		select {
 		case <-ctx.Done():
-			common.InfoPrintf("Stop mirror monitor.\n")
+			logger.Info("stopped mirror monitor")
 			return
 		case <-ticker.C:
 			for i := range tasks {
@@ -72,67 +75,56 @@ func StartMonitor(ctx context.Context) {
 
 // Check the given mirror and update its status.
 func checkMirror(ctx context.Context, name string, mirror *common.Mirror) {
-	u, err := url.Parse(mirror.URL)
-	if err != nil {
-		common.Fatalf("Mirror [%s] URL invalid: %v\n",
-			name, mirror.URL)
-	}
+	u, _ := url.Parse(mirror.URL)
 
-	status := false
+	var online bool
+	var err error
 	switch u.Scheme {
 	case "http", "https":
-		status, err = httpCheck(ctx, u)
+		online, err = httpCheck(ctx, u)
 	case "ftp":
-		status, err = ftpCheck(ctx, u)
+		online, err = ftpCheck(ctx, u)
 	default:
-		common.Fatalf("Mirror [%s] URL unsupported: %v\n",
-			name, mirror.URL)
+		panic("invalid URL scheme: " + u.Scheme)
 	}
-	common.DebugPrintf("Mirror [%s]: %v, error: %v\n",
-		name, status, err)
+	logger.Debug("checked mirror", "name", name, "online", online, "error", err)
 
 	// Don't update the status if the check was interrupted by shutdown.
 	if ctx.Err() != nil {
 		return
 	}
-	updateMirror(ctx, name, mirror, status)
+	updateMirror(ctx, name, mirror, online)
 }
 
 // Update the status of a mirror accodring to the check result.
-func updateMirror(ctx context.Context, name string, mirror *common.Mirror, status bool) {
-	if status {
+func updateMirror(ctx context.Context, name string, mirror *common.Mirror, online bool) {
+	if online {
 		mirror.Status.OKCount++
 	} else {
 		mirror.Status.ErrorCount++
 	}
 
-	if mirror.Status.Online != status {
+	if mirror.Status.Online != online {
 		mirror.Status.Hysteresis++
-		common.DebugPrintf("Mirror [%s] hysteresis = %d\n",
-			name, mirror.Status.Hysteresis)
+		logger.Debug("mirror status", "name", name, "hysteresis", mirror.Status.Hysteresis)
 		if mirror.Status.Hysteresis >= appConfig.Monitor.Hysteresis {
 			mirror.Status.Hysteresis = 0
-			mirror.Status.Online = status
-			if status {
-				common.InfoPrintf("Mirror [%s] came UP.\n", name)
+			mirror.Status.Online = online
+			if online {
+				logger.Info("mirror changed", "name", name, "status", "UP")
 			} else {
-				common.WarnPrintf("Mirror [%s] went DOWN!\n", name)
+				logger.Warn("mirror changed", "name", name, "status", "DOWN!")
 			}
-			go notifyExec(ctx, name, status)
+			go notifyExec(ctx, name, online)
 		}
 	} else {
 		mirror.Status.Hysteresis = 0
-		common.DebugPrintf("Mirror [%s] hysteresis = %d\n",
-			name, mirror.Status.Hysteresis)
+		logger.Debug("mirror status", "name", name, "hysteresis", mirror.Status.Hysteresis)
 	}
 }
 
 // Check the given HTTP/HTTPS URL to determine whether it's accessible.
 func httpCheck(ctx context.Context, u *url.URL) (bool, error) {
-	if u.Scheme != "http" && u.Scheme != "https" {
-		return false, fmt.Errorf("Invalid HTTP(s) URL: %v", u.String())
-	}
-
 	timeout := time.Duration(appConfig.Monitor.Timeout) * time.Second
 	tr := http.DefaultTransport.(*http.Transport).Clone()
 	tr.TLSClientConfig = &tls.Config{
@@ -160,8 +152,7 @@ func httpCheck(ctx context.Context, u *url.URL) (bool, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return false, fmt.Errorf("Status code (%d) != OK",
-			resp.StatusCode)
+		return false, fmt.Errorf("status code (%d) != OK", resp.StatusCode)
 	}
 
 	return true, nil
@@ -182,10 +173,6 @@ func (c *cancelConn) Close() error {
 
 // Check the given FTP URL to determine whether it's accessible.
 func ftpCheck(ctx context.Context, u *url.URL) (bool, error) {
-	if u.Scheme != "ftp" {
-		return false, fmt.Errorf("Invalid FTP URL: %v", u.String())
-	}
-
 	addr := u.Host
 	if u.Port() == "" {
 		addr += ":21"
@@ -227,13 +214,13 @@ func ftpCheck(ctx context.Context, u *url.URL) (bool, error) {
 
 // Publish the mirror event by invoking the configured notification
 // executable.
-func notifyExec(ctx context.Context, name string, status bool) {
+func notifyExec(ctx context.Context, name string, online bool) {
 	if appConfig.Monitor.NotifyExec == "" {
 		return
 	}
 
 	event := "DOWN"
-	if status {
+	if online {
 		event = "UP"
 	}
 
@@ -242,16 +229,16 @@ func notifyExec(ctx context.Context, name string, status bool) {
 	defer cancel()
 
 	cmd := exec.CommandContext(ctx, appConfig.Monitor.NotifyExec, name, event)
-	common.DebugPrintf("Command: %s\n", cmd.String())
+	logger.Debug("executing notify", "command", cmd.String())
 	output, err := cmd.CombinedOutput()
 	if output != nil && len(output) > 0 {
-		common.InfoPrintf("Command output: %s", output)
+		logger.Debug("command output", "content", output)
 	}
 	if errors.Is(ctx.Err(), context.DeadlineExceeded) {
-		common.ErrorPrintf("Command (%s) timed out!\n", cmd.String())
+		logger.Error("command timed out", "command", cmd.String())
 	} else if errors.Is(ctx.Err(), context.Canceled) {
-		common.DebugPrintf("Command (%s) canceled.\n", cmd.String())
+		logger.Debug("command canceled", "command", cmd.String())
 	} else if err != nil {
-		common.ErrorPrintf("Command (%s) failed: %v\n", cmd.String(), err)
+		logger.Error("command failed", "command", cmd.String(), "error", err)
 	}
 }

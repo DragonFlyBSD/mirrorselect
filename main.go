@@ -44,6 +44,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -59,10 +60,23 @@ import (
 )
 
 func main() {
+	logLevel := &slog.LevelVar{} // INFO
+	logOpts := &slog.HandlerOptions{
+		AddSource: true,
+		Level:     logLevel,
+	}
+	logger := slog.New(slog.NewTextHandler(os.Stderr, logOpts))
+	slog.SetDefault(logger)
+
 	configFile := flag.String("config", common.AppName+".toml", "config file")
 	accessLog := flag.String("access-log", "", "web access log file")
 	showVersion := flag.Bool("version", false, "show version")
+	isDebug := flag.Bool("debug", false, "debug mode")
 	flag.Parse()
+
+	if *isDebug {
+		logLevel.Set(slog.LevelDebug)
+	}
 
 	if *showVersion {
 		fmt.Printf("Version: %s\n", common.Version)
@@ -72,23 +86,30 @@ func main() {
 	}
 
 	if u, _ := user.Current(); u.Uid == "0" {
-		common.WarnPrintf("Running as root (uid=0) is discouraged!!!")
+		slog.Warn("running as root (uid=0) is discouraged!!!")
 	}
 
-	cfg := common.ReadConfig(*configFile)
+	cfg := common.ReadConfig(*configFile, slog.Default())
+	if *isDebug {
+		cfg.Debug = *isDebug
+	}
 
-	if !cfg.Debug {
+	if cfg.Debug {
+		logLevel.Set(slog.LevelDebug)
+	} else {
 		gin.SetMode(gin.ReleaseMode)
 	}
+
 	if *accessLog != "" {
 		f, err := os.OpenFile(*accessLog,
 			os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
-			common.Fatalf("Failed to open access log `%s`, error: %v\n", *accessLog, err)
+			slog.Error("failed to open access log", "file", *accessLog, "error", err)
+			os.Exit(1)
 		}
 		gin.DisableConsoleColor()
 		gin.DefaultWriter = io.MultiWriter(f)
-		common.InfoPrintf("Write access log to file: %s\n", *accessLog)
+		slog.Info("opened access log", "file", *accessLog)
 	}
 
 	engine := gin.New()
@@ -96,15 +117,16 @@ func main() {
 	if !cfg.Debug {
 		engine.Use(gin.Recovery())
 		if len(cfg.TrustedProxies) == 0 {
-			common.Fatalf("Config `trusted_proxies` required for production mode!\n")
+			slog.Error("config `trusted_proxies` required for production mode!")
+			os.Exit(1)
 		}
 	}
 
 	if err := engine.SetTrustedProxies(cfg.TrustedProxies); err != nil {
-		common.Fatalf("Failed to set trusted proxies (%v), error: %v\n", cfg.TrustedProxies, err)
+		slog.Error("failed to set trusted proxies", "value", cfg.TrustedProxies, "error", err)
+		os.Exit(1)
 	}
-	common.InfoPrintf("Trusted proxies: %v\n", cfg.TrustedProxies)
-	common.InfoPrintf("Remote IP headers: %v\n", engine.RemoteIPHeaders)
+	slog.Info("configured gin", "trusted_proxies", cfg.TrustedProxies)
 
 	engine.GET("/", api.GetPing)
 	engine.GET("/pkg/:abi/*path", api.GetPkgMirrors)
@@ -119,7 +141,7 @@ func main() {
 
 	monitorDone := make(chan struct{})
 	go func() {
-		monitor.StartMonitor(ctx)
+		monitor.StartMonitor(ctx, slog.Default())
 		close(monitorDone)
 	}()
 
@@ -128,22 +150,23 @@ func main() {
 		Handler: engine,
 	}
 	go func() {
-		common.InfoPrintf("Listen on: [%s]\n", cfg.Listen)
+		slog.Info("start listening", "address", cfg.Listen)
 		err := srv.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
-			common.Fatalf("Failed to start server: %v\n", err)
+			slog.Error("failed to start server", "error", err)
+			os.Exit(1)
 		}
 	}()
 
 	<-ctx.Done()
-	common.InfoPrintf("Received shutdown signal, shutting down.\n")
+	slog.Info("received shutdown signal, shutting down ...")
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(shutdownCtx); err != nil {
-		common.ErrorPrintf("Failed to shut down server: %v\n", err)
+		slog.Error("failed to shut down server", "error", err)
 	}
 
 	<-monitorDone
-	common.InfoPrintf("Shutdown complete.\n")
+	slog.Info("shutdown complete")
 }

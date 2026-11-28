@@ -5,6 +5,7 @@
 package geoip
 
 import (
+	"log/slog"
 	"math"
 	"net"
 	"testing"
@@ -14,7 +15,7 @@ import (
 
 func init() {
 	fname := "../testdata/mirrorselect.toml"
-	common.ReadConfig(fname)
+	common.ReadConfig(fname, slog.Default())
 }
 
 func TestLookupIP1(t *testing.T) {

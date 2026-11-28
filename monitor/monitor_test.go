@@ -10,6 +10,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -319,7 +320,7 @@ func TestStartMonitorContextCancel(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	done := make(chan struct{})
 	go func() {
-		StartMonitor(ctx)
+		StartMonitor(ctx, slog.Default())
 		close(done)
 	}()
 

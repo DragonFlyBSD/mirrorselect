@@ -5,7 +5,9 @@
 package common
 
 import (
+	"log/slog"
 	"net/url"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -78,30 +80,34 @@ var AppConfig = &Config{
 }
 
 // Read main configurations from file.
-func ReadConfig(cfgfile string) *Config {
+func ReadConfig(cfgfile string, logger *slog.Logger) *Config {
+	logger = logger.With("component", "common")
+
 	_, err := toml.DecodeFile(cfgfile, &AppConfig)
 	if err != nil {
-		Fatalf("Failed to read config file `%s`: %v\n", cfgfile, err)
+		logger.Error("failed to read config", "file", cfgfile, "error", err)
+		os.Exit(1)
 	}
-	InfoPrintf("Read in config file: %s\n", cfgfile)
+	logger.Info("read config", "file", cfgfile)
 
 	if AppConfig.Monitor.Workers <= 0 {
-		Fatalf("Config [monitor.workers] = %d <= 0\n",
-			AppConfig.Monitor.Workers)
+		logger.Error("invalid [monitor.workers]", "value", AppConfig.Monitor.Workers)
+		os.Exit(1)
 	}
 
 	if !AppConfig.Monitor.TLSVerify {
-		WarnPrintf("TLS verification disabled! THIS IS INSECURE!!!")
+		logger.Warn("TLS verification disabled! THIS IS INSECURE!!!")
 	}
 
 	mlfile := AppConfig.MirrorListFile
 	if mlfile == "" {
-		Fatalf("Config [mirror_list] not set")
+		logger.Error("[mirror_list] required but not set")
+		os.Exit(1)
 	}
 	if !filepath.IsAbs(mlfile) {
 		mlfile = filepath.Join(filepath.Dir(cfgfile), mlfile)
 	}
-	readMirrors(mlfile)
+	readMirrors(mlfile, logger)
 
 	switch strings.ToLower(AppConfig.MMDBType) {
 	case "db-ip", "dbip":
@@ -109,31 +115,35 @@ func ReadConfig(cfgfile string) *Config {
 	case "maxmind":
 		AppConfig.MMDB.Type = MMDB_MAXMIND
 	default:
-		Fatalf("Config [mmdb_type] invalid: %v", AppConfig.MMDBType)
+		logger.Error("invalid [mmdb_type]", "value", AppConfig.MMDBType)
+		os.Exit(1)
 	}
 
 	mmdbfile := AppConfig.MMDBFile
 	if mmdbfile == "" {
-		Fatalf("Config [mmdb_file] not set")
+		logger.Error("[mmdb_file] required but not set")
+		os.Exit(1)
 	}
 	if !filepath.IsAbs(mmdbfile) {
 		mmdbfile = filepath.Join(filepath.Dir(cfgfile), mmdbfile)
 	}
 	AppConfig.MMDB.DB, err = maxminddb.Open(mmdbfile)
 	if err != nil {
-		Fatalf("Failed to open MMDB: %v\n", err)
+		logger.Error("failed to open MMDB", "file", mmdbfile, "error", err)
+		os.Exit(1)
 	}
 
-	DebugPrintf("App config: %+v\n", AppConfig)
+	logger.Debug("loaded config", "value", AppConfig)
 	return AppConfig
 }
 
 // Read config file of mirrors.
-func readMirrors(fname string) {
+func readMirrors(fname string, logger *slog.Logger) {
 	if _, err := toml.DecodeFile(fname, &AppConfig.Mirrors); err != nil {
-		Fatalf("Failed to read mirrors file `%s`: %v\n", fname, err)
+		logger.Error("failed to read mirrors", "file", fname, "error", err)
+		os.Exit(1)
 	}
-	InfoPrintf("Read mirrors list from file: %s\n", fname)
+	logger.Info("Read mirrors", "file", fname)
 
 	var defaults []string
 	for name, mirror := range AppConfig.Mirrors {
@@ -144,35 +154,38 @@ func readMirrors(fname string) {
 
 		u, err := url.Parse(mirror.URL)
 		if err != nil {
-			Fatalf("Mirror [%s] URL invalid: %v\n",
-				name, mirror.URL)
+			logger.Error("invalid mirror", "name", name, "url", mirror.URL)
+			os.Exit(1)
 		}
 		switch u.Scheme {
 		case "http", "https", "ftp":
 			break
 		default:
-			Fatalf("Mirror [%s] URL unsupported: %v\n",
-				name, mirror.URL)
+			logger.Error("unsupported mirror", "name", name, "url", mirror.URL)
+			os.Exit(1)
 		}
 
 		if mirror.ContinentCode == "" || mirror.CountryCode == "" ||
 			mirror.Latitude == 0 || mirror.Longitude == 0 {
-			Fatalf("Mirror [%s] location incomplete\n", name)
+			logger.Error("mirror location incomplete", "name", name)
+			os.Exit(1)
 		}
 
 		mirror.Status.Online = true
-		DebugPrintf("Mirror [%s]: %+v\n", name, mirror)
+		logger.Debug("added mirror", "name", name, "info", mirror)
 
 		if mirror.IsDefault {
 			defaults = append(defaults, name)
-			InfoPrintf("Default mirror: %s\n", name)
+			logger.Info("default mirror", "name", name)
 		}
 	}
 
 	if len(defaults) == 0 {
-		Fatalf("No default mirror set.\n")
+		logger.Error("default mirror required but not set")
+		os.Exit(1)
 	}
 	if len(defaults) > 1 {
-		Fatalf("More than one default mirrors: %v", defaults)
+		logger.Error("found multiple default mirrors", "mirrors", defaults)
+		os.Exit(1)
 	}
 }

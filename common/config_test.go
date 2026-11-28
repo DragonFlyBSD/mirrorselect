@@ -4,11 +4,14 @@
 
 package common
 
-import "testing"
+import (
+	"log/slog"
+	"testing"
+)
 
 func TestReadConfig(t *testing.T) {
 	fname := "../testdata/mirrorselect.toml"
-	cfg := ReadConfig(fname)
+	cfg := ReadConfig(fname, slog.Default())
 
 	if cfg.Monitor.TLSVerify != false {
 		t.Errorf("ReadConfig(%q) failed: TLSVerify = %v, want %v\n",
